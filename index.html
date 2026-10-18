@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="AI Council">
+<meta name="application-name" content="AI Council">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f1222">
+<title>AI Council</title>
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{
+  --bg:#0f1222;--panel:#181c33;--panel2:#20253f;--text:#eef0ff;--muted:#a3a9cf;
+  --accent:#7b88ff;--accent2:#4fd1c5;--warn:#ffb454;--danger:#ff6b81;--ok:#4ade80;
+  --border:#2e3458;--radius:14px;
+}
+body.light{--bg:#f4f5fb;--panel:#ffffff;--panel2:#eceefa;--text:#161a33;--muted:#575d85;--border:#d5d8ee;--accent:#4c5af0}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+body{display:flex;flex-direction:column;height:100dvh;padding-top:env(safe-area-inset-top)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent2);outline-offset:2px}
+header{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--panel);border-bottom:1px solid var(--border);flex-wrap:wrap}
+header h1{font-size:1.1rem;margin:0;flex:1;min-width:120px}
+header h1 small{display:block;font-weight:400;color:var(--muted);font-size:.72rem}
+.tb{display:flex;gap:6px;flex-wrap:wrap}
+.btn{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;min-height:40px;display:inline-flex;align-items:center;gap:6px;font-size:.9rem}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.btn.ok{background:var(--ok);color:#052;border-color:var(--ok);font-weight:600}
+.btn[aria-pressed="true"]{background:var(--accent2);color:#032;border-color:var(--accent2);font-weight:600}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+#focusBar{display:none;padding:8px 12px;background:rgba(79,209,197,.14);border-bottom:1px solid var(--accent2);font-size:.88rem}
+#focusBar.on{display:flex;gap:8px;align-items:center}
+#focusBar b{color:var(--accent2)}
+#focusBar span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+main{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.empty{margin:auto;text-align:center;color:var(--muted);max-width:340px}
+.empty .big{font-size:3rem}
+.msg{background:var(--panel);border:1px solid var(--border);border-left:5px solid var(--c,var(--accent));border-radius:var(--radius);padding:10px 12px;max-width:100%}
+.msg.user{--c:var(--accent2);background:var(--panel2)}
+.msg.sys{--c:var(--warn);font-size:.88rem;color:var(--muted)}
+.msg .who{font-weight:700;font-size:.82rem;color:var(--c);display:flex;justify-content:space-between;gap:8px}
+.msg .who time{color:var(--muted);font-weight:400}
+.msg .body{white-space:pre-wrap;word-wrap:break-word;margin-top:3px}
+.msg.drift{border-style:dashed}
+.msg .flag{color:var(--warn);font-size:.78rem;margin-top:4px}
+footer{background:var(--panel);border-top:1px solid var(--border);padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;align-items:center}
+.row .grow{flex:1}
+.compose{display:flex;gap:8px;align-items:flex-end}
+textarea{flex:1;resize:none;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:10px;min-height:46px;max-height:140px}
+.status{font-size:.8rem;color:var(--muted);min-height:1.2em}
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:16px;padding:0;width:min(560px,94vw);max-height:88dvh}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+.dlg{padding:16px;overflow:auto;max-height:86dvh}
+.dlg h2{margin:0 0 10px;font-size:1.15rem}
+.dlg label{display:block;margin:10px 0 4px;font-weight:600;font-size:.9rem}
+.dlg input[type=text],.dlg input[type=number],.dlg select,.dlg textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:9px}
+.dlg .chk{display:flex;gap:10px;align-items:center;margin:10px 0}
+.dlg .chk input{width:22px;height:22px}
+.dlg .chk label{margin:0}
+.hint{color:var(--muted);font-size:.8rem;margin:2px 0}
+.dfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.member{display:flex;gap:8px;align-items:center;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:8px;margin:6px 0}
+.member input[type=text]{flex:1;min-width:0}
+.dot{width:14px;height:14px;border-radius:50%;flex:none}
+.proj{display:flex;gap:8px;align-items:center;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:8px;margin:6px 0}
+.proj .t{flex:1;min-width:0}
+.proj .t b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.proj .t small{color:var(--muted)}
+#toast{position:fixed;left:50%;bottom:calc(110px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .25s;z-index:99;max-width:90vw}
+#toast.show{opacity:1}
+.board{background:var(--panel2);border:1px solid var(--accent2);border-radius:var(--radius);padding:8px 12px;font-size:.88rem}
+.board summary{cursor:pointer;font-weight:700;color:var(--accent2)}
+.board h3{margin:8px 0 2px;font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.board ul{margin:0;padding-left:18px}
+.msg .who .to{color:var(--muted);font-weight:400}
+.deliv{background:var(--panel2);border:1px solid var(--ok);border-radius:var(--radius);padding:10px 12px}
+.deliv .dh{font-weight:700;color:var(--ok)}
+.drow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+#dPreview{width:96vw;height:92dvh;max-height:92dvh;overflow:hidden}
+#dPreview[open]{display:flex;flex-direction:column}
+.pvbar{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border)}
+#pvFrame{flex:1;width:100%;border:0;background:#fff}
+.typing{color:var(--muted);font-style:italic;font-size:.85rem}
+@media (max-width:480px){.btn .lbl{display:none}.btn.keep .lbl{display:inline}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>AI Council<small>You give the problem. The panel discusses the solution.</small></h1>
+  <div class="tb" role="toolbar" aria-label="Main actions">
+    <button class="btn" id="bPanel" aria-label="Panel">👥<span class="lbl">Panel</span></button>
+    <button class="btn" id="bSave" aria-label="Save project">💾<span class="lbl">Save</span></button>
+    <button class="btn" id="bProjects" aria-label="Projects">📁<span class="lbl">Projects</span></button>
+    <button class="btn" id="bExport" aria-label="Export">⬇<span class="lbl">Export</span></button>
+    <button class="btn" id="bSettings" aria-label="Settings">⚙<span class="lbl">Settings</span></button>
+    <button class="btn" id="bNew" aria-label="New project">✚<span class="lbl">New</span></button>
+  </div>
+</header>
+<div id="focusBar" role="status" aria-live="polite"><b>🎯 Stay on target:</b><span id="focusText"></span></div>
+<main id="chat" aria-live="polite" aria-label="Council discussion"></main>
+<footer>
+  <div class="row">
+    <button class="btn" id="bContinue" aria-label="Continue discussion">↻ <span class="lbl keep">Continue</span></button>
+    <button class="btn" id="bFocus" aria-pressed="false" aria-label="Toggle stay on target">🎯 <span class="lbl keep">Stay on target</span></button>
+    <button class="btn" id="bAuto" aria-pressed="false" aria-label="Toggle autopilot">▶ <span class="lbl keep">Autopilot</span></button>
+    <button class="btn" id="bBuild" aria-label="Build the app">🛠 <span class="lbl keep">Build</span></button>
+    <button class="btn ok" id="bWrap" aria-label="Wrap up">✔ <span class="lbl keep">Wrap up</span></button>
+    <span class="status grow" id="status"></span>
+  </div>
+  <div class="compose">
+    <textarea id="input" rows="1" placeholder="Describe your problem…" aria-label="Your problem or message"></textarea>
+    <button class="btn primary" id="bSend">Send</button>
+  </div>
+</footer>
+<div id="toast" role="status"></div>
+
+<dialog id="dPanel" aria-labelledby="tPanel"><div class="dlg">
+  <h2 id="tPanel">👥 Panel</h2>
+  <p class="hint">Council members take turns responding. Enable, rename, or give each a role.</p>
+  <div id="members"></div>
+  <div class="dfoot"><button class="btn" id="addMember">+ Add member</button><button class="btn primary" data-close>Done</button></div>
+</div></dialog>
+
+<dialog id="dSettings" aria-labelledby="tSet"><div class="dlg">
+  <h2 id="tSet">⚙ Settings</h2>
+  <div class="chk"><input type="checkbox" id="sContinue"><label for="sContinue">Show the Continue button</label></div>
+  <div class="chk"><input type="checkbox" id="sAutoPilot"><label for="sAutoPilot">Autopilot: keep going without tapping Continue</label></div>
+  <label for="sMaxRuns">Autopilot max rounds (0 = keep going until solved, up to 100)</label>
+  <input type="number" id="sMaxRuns" min="0" max="100">
+  <div class="chk"><input type="checkbox" id="sFocus"><label for="sFocus">Stay on target (keep the panel on the problem)</label></div>
+  <label for="sStrict">Focus strictness</label>
+  <select id="sStrict"><option value="gentle">Gentle – flag drift only</option><option value="strict">Strict – drop drifting replies and retry</option></select>
+  <div class="chk"><input type="checkbox" id="sAuto"><label for="sAuto">Autosave project</label></div>
+  <div class="chk"><input type="checkbox" id="sLight"><label for="sLight">Light theme</label></div>
+  <label for="sRounds">Replies per round (1–6)</label>
+  <input type="number" id="sRounds" min="1" max="6">
+  <label for="sEngine">Reply engine</label>
+  <select id="sEngine"><option value="local">Built-in offline engine</option><option value="custom">Custom endpoint (OpenAI-compatible)</option></select>
+  <div id="customBox" hidden>
+    <label for="sProvider">Provider</label>
+    <select id="sProvider"><option value="openai">OpenAI-compatible (OpenAI, OpenRouter, Groq…)</option><option value="anthropic">Anthropic (Claude)</option></select>
+    <label for="sUrl">Endpoint URL</label><input type="text" id="sUrl" placeholder="https://api.openai.com/v1/chat/completions" autocomplete="off" autocapitalize="off">
+    <label for="sModel">Model name</label><input type="text" id="sModel" autocomplete="off" autocapitalize="off" placeholder="e.g. gpt-4o or claude-sonnet-4-6">
+    <label for="sKey">API key (stored only on this device)</label><input type="password" id="sKey" autocomplete="off">
+    <div class="dfoot" style="justify-content:flex-start"><button class="btn" id="bTest">Test connection</button></div>
+    <p class="hint" id="testResult"></p>
+    <h3 style="margin:14px 0 0;font-size:1rem">🛠 App building</h3>
+    <div class="chk"><input type="checkbox" id="sBuild"><label for="sBuild">Build mode: discuss, then write, test and fix a real app (turns Autopilot on)</label></div>
+    <label for="sPlan">Discussion rounds before building (1–6)</label><input type="number" id="sPlan" min="1" max="6">
+    <label for="sIters">Max build/fix attempts (1–8)</label><input type="number" id="sIters" min="1" max="8">
+    <p class="hint">Your key is sent only to the endpoint you enter. If the endpoint fails, discussion falls back to the offline engine.</p>
+  </div>
+  <div class="dfoot"><button class="btn primary" data-close>Done</button></div>
+</div></dialog>
+
+<dialog id="dExport" aria-labelledby="tExp"><div class="dlg">
+  <h2 id="tExp">⬇ Export</h2>
+  <div class="dfoot" style="justify-content:flex-start">
+    <button class="btn" id="exTxt">Download .txt</button>
+    <button class="btn" id="exMd">Download .md</button>
+    <button class="btn" id="exJson">Project file (.json)</button>
+    <button class="btn" id="exCopy">Copy</button>
+  </div>
+  <label for="importFile">Import a project file</label>
+  <input type="file" id="importFile" accept=".json,application/json">
+  <div class="dfoot"><button class="btn primary" data-close>Close</button></div>
+</div></dialog>
+
+<dialog id="dProjects" aria-labelledby="tPr"><div class="dlg">
+  <h2 id="tPr">📁 Saved projects</h2>
+  <div id="projList"></div>
+  <div class="dfoot"><button class="btn primary" data-close>Close</button></div>
+</div></dialog>
+
+<dialog id="dHelp" aria-labelledby="tHelp"><div class="dlg">
+  <h2 id="tHelp">📱 Add to iPhone Home Screen</h2>
+  <ol>
+    <li>Put this file on GitHub as <code>index.html</code> in a repository.</li>
+    <li>Repo → Settings → Pages → deploy from branch <code>main</code>, folder <code>/ (root)</code>.</li>
+    <li>Open the <code>https://USERNAME.github.io/REPO/</code> link in Safari.</li>
+    <li>Tap Share → <b>Add to Home Screen</b>.</li>
+  </ol>
+  <p class="hint">Your saved projects live in this device's browser storage; use Export → Project file for backups.</p>
+  <div class="dfoot"><button class="btn primary" data-close>Got it</button></div>
+</div></dialog>
+
+<dialog id="dPreview" aria-label="App preview"><div class="pvbar"><b>App preview</b><button class="btn primary" data-close>Close</button></div><iframe id="pvFrame" title="App preview" sandbox="allow-scripts allow-forms allow-modals allow-popups"></iframe></dialog>
+
+<script>
+(function(){
+function banner(m){var b=document.getElementById("errBanner");if(!b){b=document.createElement("div");b.id="errBanner";b.onclick=function(){b.remove()};b.style.cssText="position:fixed;top:0;left:0;right:0;z-index:99;background:#b00020;color:#fff;padding:10px 12px;font:13px/1.4 -apple-system,sans-serif;white-space:pre-wrap";document.body.appendChild(b)}b.textContent="AI Council error: "+m+"  (tap to dismiss)"}
+window.addEventListener("error",function(e){
+  if(!e.filename&&!e.lineno&&/^script error\.?$/i.test(e.message||"")){try{console.warn("Ignored anonymous script error (usually a browser extension)")}catch(x){}return}
+  banner((e.message||"unknown")+(e.lineno?" (line "+e.lineno+")":""));
+});
+window.addEventListener("unhandledrejection",function(e){try{console.warn("Unhandled promise rejection",e.reason)}catch(x){}});
+window.addEventListener("load",function(){setTimeout(function(){if(!window.__councilLoaded)banner("the app script did not start. Check that all files are in the repo root and reload.")},800)});
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var KEY="aiCouncil.v1";
+var COLORS=["#7b88ff","#4fd1c5","#ffb454","#ff6b81","#c084fc","#4ade80","#f472b6","#60a5fa"];
+var ROLES={
+  "Strategist":["Let's frame the core goal first:","The biggest lever here is","A sensible plan would be to","Prioritise the step that unblocks the rest:"],
+  "Skeptic":["One risk to check:","What could go wrong is","I'd challenge the assumption that","Before committing, verify"],
+  "Builder":["Practically, the first concrete step is","To implement this, you could","A simple version to try today:","Break it into small tasks:"],
+  "Researcher":["Useful facts to gather:","It would help to know","Comparable cases suggest","Measure this to decide:"],
+  "Creative":["A different angle:","What if you flipped it and","An unconventional option:","Combine two ideas:"]
+};
+function defaultState(){
+  return {id:uid(),title:"Untitled project",created:Date.now(),updated:Date.now(),problem:"",messages:[],
+    members:[{name:"Ava",role:"Strategist",on:true},{name:"Ben",role:"Skeptic",on:true},{name:"Cleo",role:"Builder",on:true},{name:"Dev",role:"Researcher",on:false},{name:"Eli",role:"Creative",on:false}],
+    wrapped:false,board:{points:[],concerns:[],steps:[]}};
+}
+function defaultSettings(){return {showContinue:true,autopilot:false,maxRuns:0,provider:"openai",buildMode:false,planRounds:2,buildIters:4,focus:false,strict:"gentle",autosave:true,light:false,rounds:3,engine:"local",url:"",model:"",key:""}}
+function uid(){return "p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+var state=defaultState(), settings=defaultSettings(), busy=false, turn=0, autoActive=false, autoRuns=0, building=false, stopBuild=false, remoteErrShown=false, judgeFails=0;
+
+/* storage */
+function sGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function sSet(k,v){try{localStorage.setItem(k,v);return true}catch(e){return false}}
+function loadAll(){
+  try{var s=JSON.parse(sGet(KEY+".settings")||"null");if(s)settings=Object.assign(defaultSettings(),s)}catch(e){}
+  try{var p=JSON.parse(sGet(KEY+".current")||"null");if(p&&p.messages)state=Object.assign(defaultState(),p)}catch(e){}
+}
+function saveSettings(){sSet(KEY+".settings",JSON.stringify(settings))}
+function projects(){try{var l=JSON.parse(sGet(KEY+".projects")||"[]");return Array.isArray(l)?l:[]}catch(e){return[]}}
+function writeProjects(l){return sSet(KEY+".projects",JSON.stringify(l))}
+function saveCurrent(){state.updated=Date.now();return sSet(KEY+".current",JSON.stringify(state))}
+function saveProject(manual){
+  if(!state.messages.length&&!state.problem){if(manual)toast("Nothing to save yet");return}
+  saveCurrent();
+  var l=projects(),i=l.findIndex(function(p){return p.id===state.id});
+  var copy=JSON.parse(JSON.stringify(state));
+  if(i>=0)l[i]=copy;else l.unshift(copy);
+  var ok=writeProjects(l);
+  if(manual)toast(ok?"Project saved ✔":"Couldn't save – storage unavailable. Use Export.");
+}
+function autosave(){saveCurrent();if(settings.autosave)saveProject(false)}
+
+/* ui helpers */
+var toastT;
+function toast(m){var t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove("show")},2200)}
+function setStatus(m){$("status").textContent=m||""}
+function esc(s){return String(s)}
+function time(ts){return new Date(ts).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}
+function colorFor(name){var i=state.members.findIndex(function(m){return m.name===name});return COLORS[(i<0?0:i)%COLORS.length]}
+
+function render(){
+  var c=$("chat");c.textContent="";
+  if(!state.messages.length){
+    var e=document.createElement("div");e.className="empty";
+    e.innerHTML='<div class="big">👥</div><h2>Bring a problem to the council</h2><p>Type it below and press Send. Your panel will discuss it. Use <b>Continue</b> for another round and <b>Wrap up</b> for a final summary.</p><button class="btn" id="bHelp">📱 Add to Home Screen</button>';
+    c.appendChild(e);$("bHelp").onclick=function(){open("dHelp")};
+  }
+  renderBuild(c);renderBoard(c);
+  state.messages.forEach(function(m){
+    var d=document.createElement("div");
+    d.className="msg"+(m.who==="You"?" user":m.who==="System"?" sys":"")+(m.drift?" drift":"");
+    d.style.setProperty("--c",m.who==="You"?"":m.who==="System"?"":colorFor(m.who));
+    if(m.who==="You"||m.who==="System")d.style.removeProperty("--c");
+    var w=document.createElement("div");w.className="who";
+    var n=document.createElement("span");n.textContent=m.who+(m.role?" · "+m.role:"")+(m.to&&m.who!=="You"?"  ↪ "+m.to:"");
+    var t=document.createElement("time");t.textContent=time(m.t);
+    w.appendChild(n);w.appendChild(t);
+    var b=document.createElement("div");b.className="body";b.textContent=m.text;
+    d.appendChild(w);d.appendChild(b);
+    if(m.drift){var f=document.createElement("div");f.className="flag";f.textContent="⚠ May have drifted from the problem";d.appendChild(f)}
+    c.appendChild(d);
+  });
+  c.scrollTop=c.scrollHeight;
+  syncControls();
+}
+function renderBoard(c){
+  var b=state.board;if(!b)return;
+  var agreed=b.points.filter(function(p){return p.support.length}),ideas=b.points.filter(function(p){return !p.support.length}).slice(-3);
+  if(!agreed.length&&!b.concerns.length&&!b.steps.length&&!ideas.length)return;
+  var d=document.createElement("details");d.className="board";d.open=true;
+  var s=document.createElement("summary");s.textContent="🧩 Shared plan (built by the panel together)";d.appendChild(s);
+  function sec(t,items){
+    if(!items.length)return;var h=document.createElement("h3");h.textContent=t;d.appendChild(h);
+    var u=document.createElement("ul");items.slice(-4).forEach(function(x){var li=document.createElement("li");li.textContent=x;u.appendChild(li)});d.appendChild(u);
+  }
+  sec("Agreed direction",agreed.map(function(p){return p.text+" — "+p.by+" + "+p.support.join(", ")}));
+  sec("Ideas on the table",ideas.map(function(p){return p.text+" — "+p.by}));
+  sec("Concerns to resolve",b.concerns.map(function(x){return x.text+" — "+x.by}));
+  sec("Next steps",b.steps.map(function(x){return x.text+" — "+x.by+(x.support.length?" (+"+x.support.join(", ")+")":"")}));
+  c.appendChild(d);
+}
+function syncControls(){
+  var bb=$("bBuild");bb.querySelector(".lbl").textContent=building?"Stop":"Build";bb.disabled=(busy&&!building)||!state.problem;
+  var ab=$("bAuto");ab.setAttribute("aria-pressed",String(settings.autopilot));
+  ab.querySelector(".lbl").textContent=settings.autopilot&&(busy||autoActive)?"Stop":"Autopilot";
+  $("bContinue").hidden=!settings.showContinue;
+  var f=$("bFocus");f.setAttribute("aria-pressed",String(settings.focus));
+  $("focusBar").classList.toggle("on",settings.focus&&!!state.problem);
+  $("focusText").textContent=" "+(state.problem||"");
+  document.body.classList.toggle("light",settings.light);
+  var has=state.messages.length>0;
+  $("bContinue").disabled=busy||!has||state.wrapped||autoActive;
+  $("bWrap").disabled=busy||!has||state.wrapped;
+  $("bSend").disabled=busy;
+}
+function add(who,text,extra){
+  var m=Object.assign({who:who,text:text,t:Date.now()},extra||{});
+  var mem=state.members.find(function(x){return x.name===who});
+  if(mem)m.role=mem.role;
+  state.messages.push(m);return m;
+}
+
+/* focus logic */
+var STOP=/^(the|a|an|and|or|to|of|in|on|for|is|are|it|this|that|with|my|i|we|you|how|what|can|do|should|be|as|at|by|from|have|has|will|would|could|about|so|but|not|your|our|their|they|them|me|us|if|then|than|there|here|more|some|any|just|get|make)$/i;
+function keywords(s){
+  return (s.toLowerCase().match(/[a-z0-9']{3,}/g)||[]).filter(function(w){return !STOP.test(w)})
+    .filter(function(w,i,a){return a.indexOf(w)===i});
+}
+function onTopic(text){
+  var k=keywords(state.problem);if(k.length<2)return true;
+  var low=text.toLowerCase(),hit=0;
+  k.forEach(function(w){if(low.indexOf(w)>=0)hit++});
+  return hit>=1;
+}
+function focusPrefix(){
+  return settings.focus?"Stay strictly on this problem: \""+state.problem+"\". Do not go off-topic. ":"";
+}
+
+/* ---------- collaboration engine ---------- */
+var CLAIMS={
+  Strategist:["define what success looks like for {t}","tackle the biggest blocker in {t} first","sequence the work on {t} so each step unblocks the next","agree one measurable goal for {t}"],
+  Skeptic:["verify the assumption that {t} will work as planned","confirm the real cost and time of {t} before committing","test what happens to {t} if the main assumption fails","check who else is affected by {t}"],
+  Builder:["build a minimal version of {t} this week","split {t} into three small tasks and start with the easiest","prototype the riskiest part of {t} first","ship a rough {t} draft and improve it from feedback"],
+  Researcher:["gather evidence on {t} before deciding","measure the current baseline for {t}","look at how others solved {t}","list what we know versus guess about {t}"],
+  Creative:["try an unconventional approach to {t}","flip the problem and ask what the opposite of {t} would look like","combine two unrelated ideas to rethink {t}","remove one constraint from {t} and see what opens up"]
+};
+var DETAILS={
+  Strategist:["That keeps the plan simple and gives everyone one shared target.","Everything else should be judged against that."],
+  Skeptic:["It's cheaper to find the flaw now than after we've built on it.","If it survives that check, I'm fully on board."],
+  Builder:["That gives us something real to react to by the end of the week.","Small and concrete beats perfect and late."],
+  Researcher:["Then we're deciding on data, not on opinions.","Even a rough number would change the discussion."],
+  Creative:["It may feel odd, but odd options often beat obvious ones.","We can drop it quickly if it doesn't earn its place."]
+};
+function pick(a,n){return a[Math.abs(n)%a.length]}
+function snip(s,n){s=String(s||"").replace(/\s+/g," ").trim();var w=s.split(" ");return w.length>n?w.slice(0,n).join(" ")+"…":s}
+function board(){if(!state.board)state.board={points:[],concerns:[],steps:[]};return state.board}
+function councilMsgs(){return state.messages.filter(function(m){return m.who!=="You"&&m.who!=="System"})}
+function topPoint(){
+  var b=board(),best=null;
+  b.points.forEach(function(p){if(!best||p.support.length>best.support.length)best=p});
+  return best||b.steps[0]||null;
+}
+function updateBoard(m){
+  if(!m.claim||m.who==="You"||m.who==="System")return;
+  var b=board(),entry={by:m.who,text:m.claim,support:[]};
+  if(m.to){
+    var all=b.points.concat(b.steps);
+    for(var i=all.length-1;i>=0;i--){
+      if(all[i].by===m.to&&m.kind!=="challenge"){if(all[i].support.indexOf(m.who)<0)all[i].support.push(m.who);break}
+    }
+  }
+  if(m.kind==="challenge")b.concerns.push({by:m.who,to:m.to,text:m.claim});
+  else if(m.role==="Builder")b.steps.push(entry);
+  else b.points.push(entry);
+  ["points","concerns","steps"].forEach(function(k){if(b[k].length>12)b[k]=b[k].slice(-12)});
+}
+function localReply(member,round){
+  var kw=keywords(state.problem).slice(0,3);
+  var topic=kw.length?kw.join(" "):"the problem";
+  var role=ROLES[member.role]?member.role:"Strategist";
+  var active=state.members.filter(function(m){return m.on}).length||1;
+  var cm=councilMsgs();
+  var phase=Math.floor(cm.length/active);
+  var mine=cm.filter(function(m){return m.who===member.name});
+  var myClaim=pick(CLAIMS[role],mine.length+member.name.length).replace(/\{t\}/g,topic);
+  var detail=pick(DETAILS[role],mine.length+turn);
+  turn++;
+  var lastMine=mine[mine.length-1];
+  var others=cm.slice(-6).filter(function(m){return m.who!==member.name});
+  var target=null;
+  for(var i=others.length-1;i>=0;i--){if(!lastMine||others[i].who!==lastMine.to){target=others[i];break}}
+  if(!target&&others.length)target=others[others.length-1];
+  var lastMsg=state.messages[state.messages.length-1];
+  var userNote=(lastMsg&&lastMsg.who==="You"&&state.messages.length>1)?"On your note \""+snip(lastMsg.text,8)+"\": ":"";
+  var text,kind="build",to=target?target.who:null;
+  if(!target){
+    kind="propose";
+    var op={Strategist:"Let me open: our first move should be to ",Skeptic:"Before we run ahead, I'd start by trying to ",Builder:"Practically, I'd begin by trying to ",Researcher:"I'd begin by trying to ",Creative:"Let me throw out a starting angle: let's "}[role];
+    text=userNote+op+myClaim+". "+detail;
+  }else{
+    var n=target.who,c=target.claim||snip(target.text,10);
+    if(role==="Strategist"&&phase>=2){
+      kind="agree";
+      var lead=topPoint(),conc=board().concerns.slice(-1)[0];
+      text="Pulling the threads together: "+(lead?"the strongest direction so far is to "+lead.text+" ("+lead.by+(lead.support.length?", backed by "+lead.support.join(" and "):"")+")":"we are converging")+". "+
+        (conc?conc.by+" raised the need to "+conc.text+", so I'd cover that before committing. ":"")+"Does everyone accept that as the plan?";
+      to=lead&&lead.by!==member.name?lead.by:n;
+    }else if(role==="Skeptic"&&phase<2){
+      kind="challenge";
+      text=userNote+n+", I like the idea to "+c+", but I'd first "+myClaim+" — otherwise we're building on a guess. "+detail;
+    }else if(role==="Skeptic"){
+      kind="agree";
+      text=userNote+n+"'s plan to "+c+" holds up better now. My one condition: "+myClaim+". "+detail;
+    }else if(role==="Strategist"){
+      text=userNote+n+"'s idea to "+c+" is the right anchor. I'd make that step one, then "+myClaim+". "+detail;
+    }else if(role==="Builder"){
+      text=userNote+"Turning "+n+"'s idea to "+c+" into action: "+myClaim+". "+detail;
+    }else if(role==="Researcher"){
+      text=userNote+"To back up "+n+"'s point to "+c+", we should "+myClaim+". "+detail;
+    }else{
+      text=userNote+"Riffing on "+n+"'s idea to "+c+": what if we also "+myClaim+"? "+detail;
+    }
+    if(phase>=2&&role!=="Strategist"&&role!=="Skeptic"){
+      var tp=topPoint();
+      if(tp)text+=" I'm happy to settle on \""+snip(tp.text,9)+"\" as the direction.";
+    }
+  }
+  return {text:text.replace(/\s+/g," ").trim(),claim:myClaim,to:to,kind:kind};
+}
+function driftReply(member){
+  var off=["Speaking of which, have you considered a totally different project?","Unrelated, but the weather has been interesting lately.","Maybe we should talk about something else entirely."];
+  return off[turn%off.length];
+}
+/* ---------- model access ---------- */
+function isRemote(){return settings.engine==="custom"&&!!settings.url}
+function callModel(system,user,o){
+  o=o||{};
+  var ctl=new AbortController(),to=setTimeout(function(){ctl.abort()},o.ms||30000);
+  var h={"Content-Type":"application/json"},body;
+  if(settings.provider==="anthropic"){
+    h["x-api-key"]=settings.key;h["anthropic-version"]="2023-06-01";h["anthropic-dangerous-direct-browser-access"]="true";
+    body={model:settings.model,max_tokens:o.max||1500,system:system,messages:[{role:"user",content:user}]};
+  }else{
+    if(settings.key)h.Authorization="Bearer "+settings.key;
+    body={model:settings.model,messages:[{role:"system",content:system},{role:"user",content:user}]};
+  }
+  return fetch(settings.url,{method:"POST",headers:h,signal:ctl.signal,body:JSON.stringify(body)})
+    .then(function(r){
+      clearTimeout(to);
+      if(!r.ok)return r.text().then(function(t){throw new Error("HTTP "+r.status+" "+t.replace(/\s+/g," ").slice(0,160))});
+      return r.json();
+    })
+    .then(function(j){
+      var t=settings.provider==="anthropic"?(j.content||[]).map(function(c){return c.text||""}).join(""):(j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content);
+      if(!t)throw new Error("Empty reply from model");
+      return t.trim();
+    },function(e){clearTimeout(to);throw (e&&e.name==="AbortError")?new Error("Timed out waiting for the model"):e});
+}
+function callRemote(system,user,ms){return callModel(system,user,{ms:ms})}
+function transcript(n,maxc){
+  return state.messages.slice(-(n||14)).map(function(m){
+    var t=maxc?snip2(m.text,maxc):m.text;
+    return (m.who==="You"?"USER":m.who+(m.role?" ("+m.role+")":""))+": "+t;
+  }).join("\n");
+}
+function snip2(s,n){s=String(s||"");return s.length>n?s.slice(0,n)+"…":s}
+function boardSummaryText(){
+  var b=board(),o=[];
+  var agreed=b.points.filter(function(p){return p.support.length}).map(function(p){return p.text+" ("+p.by+" + "+p.support.join(", ")+")"});
+  if(agreed.length)o.push("Backed by several members: "+agreed.slice(-3).join("; "));
+  if(b.concerns.length)o.push("Open concerns: "+b.concerns.slice(-3).map(function(c){return c.by+": "+c.text}).join("; "));
+  return o.join("\n");
+}
+function remoteReply(member){
+  var cm=councilMsgs(),active=state.members.filter(function(m){return m.on}).length||1;
+  var phase=Math.floor(cm.length/active);
+  var hint=phase===0?"This is the opening round: propose your own angle, and respond to anyone who already spoke.":
+           phase===1?"Respond directly to colleagues: agree, challenge, or refine. Do not just restate your earlier point.":
+           "We are converging: resolve disagreements. Once a plan is agreed, the Builder must write the actual deliverable (complete code or the concrete fix) and the Skeptic must review it for bugs, until it is finished.";
+  var sys="You are "+member.name+", the "+member.role+" on a panel of colleagues solving the user's problem together. Read the transcript. Reply in 2-4 sentences (unless you are the Builder delivering the actual work, then give it in full), addressing colleagues by name: explicitly build on, challenge or refine at least one point someone else made, and add one new idea of your own. Never repeat earlier points. "+hint+" Output only your message, with no name prefix. "+focusPrefix();
+  var usr="Problem: "+state.problem+"\n\nTranscript so far:\n"+transcript()+(boardSummaryText()?"\n\nPanel status:\n"+boardSummaryText():"")+"\n\nYour turn, "+member.name+".";
+  return callRemote(sys,usr).then(function(t){
+    t=t.replace(new RegExp("^\\s*"+member.name+"\\s*(\\([^)]*\\))?\\s*:\\s*","i"),"");
+    var to=null;
+    state.members.forEach(function(x){if(x.name!==member.name&&!to&&t.indexOf(x.name)>=0)to=x.name});
+    var kind=/\b(but|however|risk|concern|disagree|challenge|worry|careful)\b/i.test(t)?"challenge":(to?"build":"propose");
+    var first=(t.match(/^[\s\S]*?[.!?](\s|$)/)||[t])[0];
+    return {text:t,claim:snip(first,14),to:to,kind:kind};
+  });
+}
+function getReply(member,round){
+  if(isRemote()){
+    return remoteReply(member).catch(function(e){
+      if(!remoteErrShown){remoteErrShown=true;add("System","⚠ Model endpoint error: "+e.message+". Using the offline engine for this reply. Check Settings → Test connection.");render()}
+      return localReply(member,round);
+    });
+  }
+  return Promise.resolve(localReply(member,round));
+}
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+
+function runRound(){
+  var active=state.members.filter(function(m){return m.on});
+  if(!active.length){toast("Turn on at least one panel member");return Promise.resolve()}
+  busy=true;remoteErrShown=false;syncControls();
+  var n=Math.min(settings.rounds,6),list=[];
+  for(var i=0;i<n;i++)list.push(active[i%active.length]);
+  var round=state.messages.length;
+  var p=Promise.resolve();
+  list.forEach(function(mem,idx){
+    p=p.then(function(){
+      if(autoActive&&!settings.autopilot)return;
+      setStatus(mem.name+" is reading the discussion…");
+      return sleep(350).then(function(){return getReply(mem,round+idx)}).then(function(r){
+        var drift=!onTopic(r.text);
+        function commit(x){var m=add(mem.name,x.text,{claim:x.claim,to:x.to,kind:x.kind,drift:drift&&settings.focus&&!x.retried});updateBoard(m)}
+        if(drift&&settings.focus&&settings.strict==="strict"){
+          return getReply(mem,round+idx+7).then(function(r2){
+            if(!onTopic(r2.text))r2=localReply(mem,round+idx+1);
+            r2.retried=true;commit(r2);
+          });
+        }
+        commit(r);
+      }).then(function(){render()});
+    });
+  });
+  return p.catch(function(){toast("Something went wrong")}).then(function(){
+    busy=false;setStatus("");autosave();
+    if(settings.autopilot&&settings.engine&&autoActive){autoNext()}else{autoActive=false;syncControls()}
+  });
+}
+
+/* ---------- build engine: write, test, review, fix ---------- */
+var BUILDER_SYS="You are the Builder on a panel of experts. Write ONE complete, self-contained HTML file (inline CSS and JavaScript, no external libraries, no network requests, no build step) that fully implements the app the panel agreed on. It must work on an iPhone in Safari: responsive, large tap targets, viewport meta tag. Keep it focused (under about 700 lines) and make every feature actually work. Avoid alert/prompt/confirm. If data must persist, use localStorage inside try/catch. Output ONLY the HTML file, starting with <!DOCTYPE html>, with no explanation and no markdown fences.";
+var REVIEW_SYS="You are the Skeptic, a strict code reviewer. You are given an app (a single HTML file), the problem it must solve, and automatic test findings. Check for JavaScript errors, missing or non-working features, broken logic, and poor mobile usability. If it fully works and meets the problem, reply with exactly APPROVED on the first line followed by one short sentence. Otherwise reply with ISSUES: followed by a numbered list (max 8) of concrete problems and how to fix each.";
+function extractHtml(t){
+  var m=t.match(/```(?:html)?\s*\n([\s\S]*?)(?:```|$)/i);
+  var c=m?m[1]:t;
+  var i=c.search(/<!doctype html|<html/i);
+  if(i>0)c=c.slice(i);
+  return c.trim();
+}
+function staticCheck(code){
+  var p=[];
+  if(!/<\/html>\s*$/i.test(code))p.push("The file looks cut off: it does not end with </html>. Make the app shorter and complete.");
+  var re=/<script\b([^>]*)>([\s\S]*?)<\/script>/gi,m;
+  while((m=re.exec(code))){
+    if(/\bsrc\s*=/i.test(m[1])||/type\s*=\s*["']?(module|application\/json|text\/template)/i.test(m[1]))continue;
+    try{new Function(m[2])}catch(e){p.push("JavaScript syntax error: "+e.message)}
+  }
+  return p;
+}
+function withShim(code,id){
+  var shim='<script>(function(){var id='+JSON.stringify(id)+';function s(m){try{parent.postMessage({__chk:id,err:String(m).slice(0,300)},"*")}catch(e){}}'+
+  'window.addEventListener("error",function(e){s((e.message||"error")+(e.lineno?" (line "+e.lineno+")":""))});'+
+  'window.addEventListener("unhandledrejection",function(e){s("Unhandled promise rejection: "+(e.reason&&e.reason.message||e.reason))});'+
+  'var ce=console.error;console.error=function(){s("console.error: "+[].slice.call(arguments).join(" "));try{ce.apply(console,arguments)}catch(x){}};'+
+  'function mk(){var st={};return{getItem:function(k){return Object.prototype.hasOwnProperty.call(st,k)?st[k]:null},setItem:function(k,v){st[k]=String(v)},removeItem:function(k){delete st[k]},clear:function(){st={}},key:function(i){return Object.keys(st)[i]||null},get length(){return Object.keys(st).length}}}'+
+  'try{Object.defineProperty(window,"localStorage",{value:mk(),configurable:true});Object.defineProperty(window,"sessionStorage",{value:mk(),configurable:true})}catch(e){}'+
+  'setTimeout(function(){try{var b=document.body;parent.postMessage({__chk:id,info:{len:(b&&b.innerText||"").trim().length,els:document.querySelectorAll("button,input,select,textarea,canvas,svg,a").length}},"*")}catch(e){}},1800);'+
+  '})();<\/script>';
+  return /<head[^>]*>/i.test(code)?code.replace(/<head[^>]*>/i,function(m){return m+shim}):shim+code;
+}
+function runtimeCheck(code){
+  return new Promise(function(res){
+    var f=document.createElement("iframe"),errs=[],id="t"+Date.now();
+    f.setAttribute("sandbox","allow-scripts");f.setAttribute("aria-hidden","true");
+    f.style.cssText="position:fixed;left:-9999px;top:0;width:390px;height:700px;border:0;visibility:hidden";
+    function onMsg(e){
+      if(e.source!==f.contentWindow)return;var d=e.data||{};if(d.__chk!==id)return;
+      if(d.err)errs.push("Runtime error: "+d.err);
+      if(d.info&&d.info.len<3&&d.info.els===0)errs.push("The page renders blank: nothing visible and no controls.");
+    }
+    window.addEventListener("message",onMsg);
+    f.srcdoc=withShim(code,id);document.body.appendChild(f);
+    setTimeout(function(){window.removeEventListener("message",onMsg);f.remove();res(errs.filter(function(x,i,a){return a.indexOf(x)===i}).slice(0,6))},2600);
+  });
+}
+function pickMember(role){
+  return state.members.filter(function(m){return m.role===role&&m.on})[0]||state.members.filter(function(m){return m.role===role})[0]||{name:role,role:role};
+}
+function pendingChange(){
+  var b=state.build;if(!b||!b.code)return "";
+  var out=[];
+  state.messages.forEach(function(m){if(m.who==="You"&&m.t>(b.at||0))out.push(m.text)});
+  return out.join("\n");
+}
+function runBuild(changeReq){
+  if(!isRemote()){toast("Building needs a real model. Open Settings → Custom endpoint.");return Promise.resolve()}
+  if(!state.problem){toast("Describe the problem first");return Promise.resolve()}
+  if(busy)return Promise.resolve();
+  busy=true;building=true;stopBuild=false;syncControls();
+  var b=state.build||(state.build={code:"",version:0,status:"",at:0});
+  var builder=pickMember("Builder"),skeptic=pickMember("Skeptic");
+  var maxIt=Math.max(1,Math.min(8,settings.buildIters||4)),it=0;
+  var issues=changeReq?"The user asked for this change: "+changeReq:"";
+  var hadCode=!!b.code;
+  function finish(ok,msg){
+    busy=false;building=false;setStatus("");
+    b.at=Date.now();
+    if(msg)add("System",msg);
+    render();autosave();
+  }
+  function step(){
+    if(stopBuild)return finish(false,"Build stopped. "+(b.code?"The latest version is in the card above.":""));
+    if(it>=maxIt)return finish(false,"Reached "+maxIt+" build attempts without full approval. The latest version (v"+b.version+") is above: try Preview, or tap Build to keep fixing.");
+    it++;
+    setStatus(builder.name+" is writing version "+(b.version+1)+"…");
+    var user;
+    if(b.code&&(issues||hadCode)){
+      user="Problem: "+state.problem+"\n\nCurrent file:\n```html\n"+b.code+"\n```\n\n"+(issues||"Improve it.")+"\n\nFix these problems and return the COMPLETE corrected HTML file.";
+    }else{
+      user="Problem: "+state.problem+"\n\nPanel discussion and agreed plan:\n"+transcript(30,600)+"\n\nWrite the complete app now.";
+    }
+    return callModel(BUILDER_SYS,user,{max:12000,ms:300000}).then(function(t){
+      var code=extractHtml(t);
+      if(code.length<80||!/<html|<!doctype/i.test(code))throw new Error("The Builder did not return an HTML file");
+      b.code=code;b.version++;b.status="testing";
+      add(builder.name,"Built version "+b.version+" ("+(code.length/1024).toFixed(1)+" KB). Testing it now…");render();
+      var st=staticCheck(code);
+      setStatus("Testing version "+b.version+" in a sandbox…");
+      return runtimeCheck(code).then(function(rt){
+        var problems=st.concat(rt);
+        setStatus(skeptic.name+" is reviewing version "+b.version+"…");
+        var ru="Problem the app must solve: "+state.problem+(changeReq?"\nRequested change: "+changeReq:"")+"\n\nAutomatic test findings:\n"+(problems.length?problems.join("\n"):"No syntax or runtime errors detected.")+"\n\nThe app:\n```html\n"+code+"\n```";
+        return callModel(REVIEW_SYS,ru,{max:1200,ms:150000}).then(function(rv){
+          var ok=/^\s*APPROVED/i.test(rv)&&!problems.length;
+          if(ok){
+            b.status="approved";
+            add(skeptic.name,"Approved version "+b.version+": "+snip2(rv.replace(/^\s*APPROVED[:.\s-]*/i,""),200));
+            return finish(true,"✔ Build finished: the app passed testing and review. Use Preview, Copy or Download in the card above.");
+          }
+          b.status="fixing";
+          issues=(problems.length?"Automatic test findings:\n"+problems.join("\n")+"\n\n":"")+"Reviewer feedback:\n"+rv;
+          add(skeptic.name,"Version "+b.version+" needs work:\n"+snip2((problems.concat([rv.replace(/^\s*ISSUES:?\s*/i,"")])).join("\n"),420));
+          render();autosave();
+          return step();
+        });
+      });
+    });
+  }
+  return Promise.resolve(step()).catch(function(e){
+    finish(false,"⚠ Build stopped: "+e.message+(b.code?" The latest version is still available above.":"")+" Check Settings → Test connection.");
+  });
+}
+function renderBuild(c){
+  var b=state.build;if(!b||!b.code)return;
+  var d=document.createElement("div");d.className="deliv";
+  var h=document.createElement("div");h.className="dh";
+  h.textContent="🛠 Your app · version "+b.version+" · "+(b.status==="approved"?"✔ tested & reviewed":"⚠ not fully approved yet");
+  var s=document.createElement("div");s.className="hint";
+  s.textContent=(b.code.length/1024).toFixed(1)+" KB single HTML file. To change it, type what you want changed, then tap Build.";
+  var r=document.createElement("div");r.className="drow";
+  function mk(label,fn){var x=document.createElement("button");x.className="btn";x.textContent=label;x.onclick=fn;r.appendChild(x)}
+  mk("▶ Preview",function(){$("pvFrame").srcdoc=withShim(b.code,"pv");open("dPreview")});
+  mk("Copy code",function(){
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(b.code).then(function(){toast("Code copied")},function(){toast("Copy blocked")});
+    else toast("Copy not supported here");
+  });
+  mk("⬇ Download",function(){download("index.html",b.code,"text/html")});
+  d.appendChild(h);d.appendChild(s);d.appendChild(r);c.appendChild(d);
+}
+
+/* autopilot */
+function converged(){
+  var cm=councilMsgs(),active=state.members.filter(function(m){return m.on}).length||1;
+  if(cm.length<active*3)return false;
+  var last=cm.slice(-active),b=board();
+  var skepticOk=last.every(function(m){return m.kind!=="challenge"});
+  var tp=topPoint();
+  return skepticOk&&!!tp&&tp.support.length>=Math.min(1,active-1);
+}
+function judge(){
+  return callRemote("You judge whether a panel has fully solved the user's problem or produced the finished deliverable (for an app or fix, the complete working code or concrete fix must already be in the transcript, and reviewed with no open concerns). Reply exactly 'DONE' if finished, otherwise 'CONTINUE: <what is still missing>'.",
+    "Problem: "+state.problem+"\n\nTranscript:\n"+transcript()).then(function(t){
+    return /^\s*DONE\b/i.test(t)?{done:true}:{done:false,missing:t.replace(/^\s*CONTINUE:?\s*/i,"").slice(0,300)};
+  });
+}
+function autoNext(){
+  if(state.wrapped||!settings.autopilot){autoActive=false;syncControls();return}
+  autoRuns++;
+  var cap=settings.maxRuns>0?settings.maxRuns:100;
+  var remote=isRemote();
+  if(remote&&settings.buildMode){
+    if(autoRuns>=Math.max(1,settings.planRounds||2)){autoActive=false;syncControls();add("System","Plan discussed. Building the app now…");render();runBuild(pendingChange());return}
+    setTimeout(function(){if(settings.autopilot&&autoActive&&!state.wrapped)runRound();else{autoActive=false;syncControls()}},500);return;
+  }
+  if(remote){
+    busy=true;syncControls();setStatus("Checking if the problem is solved…");
+    judge().then(function(j){
+      busy=false;setStatus("");judgeFails=0;
+      if(!autoActive||!settings.autopilot){autoActive=false;syncControls();return}
+      if(j.done){autoActive=false;toast("Problem solved ✔");wrap();return}
+      if(autoRuns>=cap){autoActive=false;add("System","Autopilot stopped after "+autoRuns+" rounds. Still missing: "+(j.missing||"unknown"));render();wrap();return}
+      add("System","Not finished yet. Still missing: "+(j.missing||"more work")+" Address this next.");render();
+      setTimeout(function(){if(settings.autopilot&&autoActive&&!state.wrapped)runRound();else{autoActive=false;syncControls()}},500);
+    },function(e){busy=false;setStatus("");judgeFails++;if(judgeFails>=3){autoActive=false;judgeFails=0;add("System","⚠ Autopilot stopped: the model endpoint keeps failing ("+e.message+"). Check Settings → Test connection.");render();syncControls();return}autoRuns--;setTimeout(function(){if(settings.autopilot&&autoActive&&!state.wrapped)runRound();else{autoActive=false;syncControls()}},2000)});
+    return;
+  }
+  if(converged()){autoActive=false;toast("Panel reached agreement ✔");wrap();return}
+  if(autoRuns>=cap){
+    autoActive=false;add("System","Autopilot stopped after "+autoRuns+" rounds without full agreement. Wrapping up with what the panel has so far.");render();wrap();return;
+  }
+  setTimeout(function(){if(settings.autopilot&&autoActive&&!state.wrapped)runRound();else{autoActive=false;syncControls()}},700);
+}
+function startAuto(){
+  if(busy||!state.messages.length)return;
+  autoActive=true;autoRuns=0;render();runRound();
+}
+/* actions */
+function send(){
+  if(busy)return;
+  var v=$("input").value.trim();if(!v)return;
+  if(!state.problem||state.wrapped){
+    if(state.wrapped){var keep=state.members;state=defaultState();state.members=keep;turn=0}
+    state.problem=v;state.title=v.length>40?v.slice(0,40)+"…":v;
+    add("You",v);
+  }else{
+    add("You",v);
+    if(settings.focus&&!onTopic(v))add("System","Heads up: that looks different from the original problem. Staying on target: "+state.problem);
+  }
+  $("input").value="";autoGrow();render();
+  if(settings.autopilot){autoActive=true;autoRuns=0}
+  runRound();
+}
+function cont(){
+  if(busy||!state.messages.length)return;
+  if(settings.focus)add("System","Staying on target: "+state.problem);
+  render();runRound();
+}
+function localSummary(){
+  var b=board(),o="Summary for: "+state.problem+"\n\n";
+  var agreed=b.points.filter(function(p){return p.support.length}).sort(function(a,c){return c.support.length-a.support.length});
+  var ideas=b.points.filter(function(p){return !p.support.length}).slice(-2);
+  var main=agreed.slice(0,3).concat(agreed.length<3?ideas:[]);
+  if(main.length){o+="Where the panel agrees:\n"+main.map(function(p){return "• "+p.text+" — "+p.by+(p.support.length?", backed by "+p.support.join(" and "):"")}).join("\n")+"\n\n"}
+  if(b.concerns.length)o+="Concerns to watch:\n"+b.concerns.slice(-3).map(function(c){return "• "+c.text+" — raised by "+c.by}).join("\n")+"\n\n";
+  if(b.steps.length)o+="Next steps:\n"+b.steps.slice(-3).map(function(s,i){return (i+1)+". "+s.text+" ("+s.by+")"}).join("\n")+"\n\n";
+  if(!main.length&&!b.steps.length){
+    var picks=councilMsgs().slice(-5);
+    o+="Key points:\n"+picks.map(function(m,i){return (i+1)+". "+m.who+": "+m.text}).join("\n")+"\n\n";
+  }
+  return o+"Do the smallest next step today, then bring the result back for another round.";
+}
+function wrap(){
+  if(busy||!state.messages.length||state.wrapped)return;
+  function done(txt){add("System",txt);state.wrapped=true;busy=false;render();autosave();toast("Wrapped up ✔")}
+  busy=true;syncControls();setStatus("Panel is agreeing a summary…");
+  if(isRemote()&&!(state.build&&state.build.code)){
+    callRemote("You write the joint conclusion of a panel discussion. Use the transcript. Output: 1) the agreed recommendation, 2) the FINISHED deliverable in full (complete code in one block if it is an app or fix), 3) any concerns still open. Credit members by name.",
+      "Problem: "+state.problem+"\n\nTranscript:\n"+transcript(),120000)
+      .then(function(t){done("Summary for: "+state.problem+"\n\n"+t)},function(){done(localSummary())});
+  }else done(localSummary());
+}
+
+function newProject(){
+  if(state.messages.length){saveProject(false);}
+  var keep=state.members;state=defaultState();state.members=keep;turn=0;
+  saveCurrent();render();$("input").focus();toast("New project started");
+}
+function autoGrow(){var t=$("input");t.style.height="auto";t.style.height=Math.min(t.scrollHeight,140)+"px"}
+
+/* dialogs */
+function open(id){var d=$(id);if(d.showModal){try{d.showModal()}catch(e){d.setAttribute("open","")}}else d.setAttribute("open","")}
+function closeD(d){if(d.close)d.close();else d.removeAttribute("open")}
+document.querySelectorAll("dialog").forEach(function(d){
+  d.addEventListener("click",function(e){if(e.target===d)closeD(d)});
+  d.querySelectorAll("[data-close]").forEach(function(b){b.onclick=function(){closeD(d)}});
+});
+
+function renderMembers(){
+  var box=$("members");box.textContent="";
+  state.members.forEach(function(m,i){
+    var r=document.createElement("div");r.className="member";
+    var dot=document.createElement("span");dot.className="dot";dot.style.background=COLORS[i%COLORS.length];
+    var cb=document.createElement("input");cb.type="checkbox";cb.checked=m.on;cb.setAttribute("aria-label","Enable "+m.name);cb.style.width="22px";cb.style.height="22px";
+    cb.onchange=function(){m.on=cb.checked;autosave()};
+    var nm=document.createElement("input");nm.type="text";nm.value=m.name;nm.setAttribute("aria-label","Member name");nm.maxLength=20;
+    nm.onchange=function(){var old=m.name;m.name=nm.value.trim()||old;state.messages.forEach(function(x){if(x.who===old)x.who=m.name});autosave();render()};
+    var sel=document.createElement("select");sel.setAttribute("aria-label","Role for "+m.name);
+    Object.keys(ROLES).forEach(function(r2){var o=document.createElement("option");o.value=o.textContent=r2;if(r2===m.role)o.selected=true;sel.appendChild(o)});
+    sel.onchange=function(){m.role=sel.value;autosave()};
+    var del=document.createElement("button");del.className="btn";del.textContent="✕";del.setAttribute("aria-label","Remove "+m.name);
+    del.onclick=function(){if(state.members.length<=1){toast("Keep at least one member");return}state.members.splice(i,1);autosave();renderMembers()};
+    r.appendChild(dot);r.appendChild(cb);r.appendChild(nm);r.appendChild(sel);r.appendChild(del);box.appendChild(r);
+  });
+}
+$("bPanel").onclick=function(){renderMembers();open("dPanel")};
+$("addMember").onclick=function(){
+  if(state.members.length>=8){toast("Maximum 8 members");return}
+  var roles=Object.keys(ROLES);
+  state.members.push({name:"Member "+(state.members.length+1),role:roles[state.members.length%roles.length],on:true});
+  autosave();renderMembers();
+};
+
+function syncSettingsUI(){
+  $("sContinue").checked=settings.showContinue;$("sFocus").checked=settings.focus;$("sStrict").value=settings.strict;
+  $("sAuto").checked=settings.autosave;$("sLight").checked=settings.light;$("sRounds").value=settings.rounds;
+  $("sAutoPilot").checked=settings.autopilot;$("sProvider").value=settings.provider;$("sBuild").checked=settings.buildMode;$("sPlan").value=settings.planRounds;$("sIters").value=settings.buildIters;$("sMaxRuns").value=settings.maxRuns;$("sEngine").value=settings.engine;$("sUrl").value=settings.url;$("sModel").value=settings.model;$("sKey").value=settings.key;
+  $("customBox").hidden=settings.engine!=="custom";
+}
+$("bSettings").onclick=function(){syncSettingsUI();open("dSettings")};
+function bindSetting(id,key,type){
+  $(id).addEventListener("change",function(){
+    var el=$(id),v=type==="bool"?el.checked:type==="num"?Math.max(1,Math.min(6,parseInt(el.value,10)||3)):el.value;
+    settings[key]=v;if(type==="num")el.value=v;
+    saveSettings();if(id==="sEngine")$("customBox").hidden=v!=="custom";
+    render();
+    if(id==="sContinue")toast(v?"Continue button on":"Continue button off");
+    if(id==="sFocus")toast(v?"Stay on target on 🎯":"Stay on target off");
+  });
+}
+bindSetting("sContinue","showContinue","bool");bindSetting("sFocus","focus","bool");bindSetting("sStrict","strict");
+bindSetting("sAuto","autosave","bool");bindSetting("sLight","light","bool");bindSetting("sRounds","rounds","num");
+bindSetting("sEngine","engine");bindSetting("sUrl","url");bindSetting("sModel","model");bindSetting("sKey","key");
+
+$("bAuto").onclick=function(){
+  if(settings.autopilot&&(busy||autoActive)){settings.autopilot=false;saveSettings();toast("Autopilot stopped");syncControls();return}
+  settings.autopilot=!settings.autopilot;saveSettings();
+  if(settings.autopilot){toast("Autopilot on ▶");if(!busy&&state.messages.length&&!state.wrapped)startAuto()}else toast("Autopilot off");
+  syncControls();
+};
+$("sAutoPilot").addEventListener("change",function(){settings.autopilot=$("sAutoPilot").checked;saveSettings();syncControls()});
+$("sMaxRuns").addEventListener("change",function(){var v=Math.max(0,Math.min(100,isNaN(parseInt($("sMaxRuns").value,10))?30:parseInt($("sMaxRuns").value,10)));settings.maxRuns=v;$("sMaxRuns").value=v;saveSettings()});
+$("bBuild").onclick=function(){
+  if(building){stopBuild=true;toast("Stopping after this step…");return}
+  if(!isRemote()){toast("Building needs a real model: choose Custom endpoint");syncSettingsUI();open("dSettings");return}
+  runBuild(pendingChange());
+};
+$("sProvider").addEventListener("change",function(){
+  settings.provider=$("sProvider").value;
+  if(settings.provider==="anthropic"&&(!settings.url||/openai/.test(settings.url)))settings.url="https://api.anthropic.com/v1/messages";
+  if(settings.provider==="openai"&&(!settings.url||/anthropic/.test(settings.url)))settings.url="https://api.openai.com/v1/chat/completions";
+  saveSettings();syncSettingsUI();
+});
+$("sBuild").addEventListener("change",function(){
+  settings.buildMode=$("sBuild").checked;if(settings.buildMode)settings.autopilot=true;
+  saveSettings();syncSettingsUI();syncControls();
+});
+$("sPlan").addEventListener("change",function(){var v=Math.max(1,Math.min(6,parseInt($("sPlan").value,10)||2));settings.planRounds=v;$("sPlan").value=v;saveSettings()});
+$("sIters").addEventListener("change",function(){var v=Math.max(1,Math.min(8,parseInt($("sIters").value,10)||4));settings.buildIters=v;$("sIters").value=v;saveSettings()});
+$("bTest").onclick=function(){
+  var r=$("testResult");r.textContent="Testing…";
+  callModel("Reply with the single word OK.","ping",{ms:20000,max:20}).then(function(t){r.textContent="✔ Connected. The model replied: "+snip2(t,40)},function(e){
+    r.textContent="✖ "+e.message+(/Failed to fetch|NetworkError|Load failed/i.test(e.message)?" — could not reach it: check the URL and internet, or this provider may block browser requests.":"");
+  });
+};
+$("dPreview").addEventListener("close",function(){$("pvFrame").srcdoc=""});
+$("bFocus").onclick=function(){
+  settings.focus=!settings.focus;saveSettings();render();
+  toast(settings.focus?"Stay on target on 🎯":"Stay on target off");
+};
+
+/* export */
+function asText(md){
+  var o=(md?"# ":"")+state.title+"\n\n"+(md?"**Problem:** ":"Problem: ")+state.problem+"\n\n";
+  state.messages.forEach(function(m){o+=(md?"**"+m.who+"**":m.who)+(m.role?" ("+m.role+")":"")+" ["+time(m.t)+"]\n"+m.text+"\n\n"});
+  return o;
+}
+function download(name,content,type){
+  try{
+    var b=new Blob([content],{type:type}),u=URL.createObjectURL(b),a=document.createElement("a");
+    a.href=u;a.download=name;document.body.appendChild(a);a.click();
+    setTimeout(function(){URL.revokeObjectURL(u);a.remove()},500);toast("Exported "+name);
+  }catch(e){toast("Download not supported here")}
+}
+function fname(ext){return (state.title||"council").replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase().slice(0,30)+"."+ext}
+function needMsgs(){if(!state.messages.length){toast("Nothing to export yet");return false}return true}
+$("bExport").onclick=function(){open("dExport")};
+$("exTxt").onclick=function(){if(needMsgs())download(fname("txt"),asText(false),"text/plain")};
+$("exMd").onclick=function(){if(needMsgs())download(fname("md"),asText(true),"text/markdown")};
+$("exJson").onclick=function(){download(fname("json"),JSON.stringify(state,null,2),"application/json")};
+$("exCopy").onclick=function(){
+  if(!needMsgs())return;var t=asText(false);
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast("Copied")},function(){toast("Copy blocked")})}
+  else toast("Copy not supported");
+};
+$("importFile").onchange=function(e){
+  var f=e.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){
+    try{
+      var p=JSON.parse(r.result);
+      if(!p||!Array.isArray(p.messages))throw new Error("bad");
+      state=Object.assign(defaultState(),p);state.id=uid();
+      if(!Array.isArray(state.members)||!state.members.length)state.members=defaultState().members;
+      saveProject(false);render();closeD($("dExport"));toast("Project imported ✔");
+    }catch(err){toast("Not a valid project file")}
+  };
+  r.readAsText(f);e.target.value="";
+};
+
+/* projects */
+function renderProjects(){
+  var box=$("projList");box.textContent="";var l=projects();
+  if(!l.length){var p=document.createElement("p");p.className="hint";p.textContent="No saved projects yet. Tap 💾 Save.";box.appendChild(p);return}
+  l.forEach(function(pr){
+    var r=document.createElement("div");r.className="proj";
+    var t=document.createElement("div");t.className="t";
+    var b=document.createElement("b");b.textContent=pr.title||"Untitled";
+    var s=document.createElement("small");s.textContent=new Date(pr.updated).toLocaleString()+" · "+pr.messages.length+" msgs";
+    t.appendChild(b);t.appendChild(s);
+    var o=document.createElement("button");o.className="btn";o.textContent="Open";
+    o.onclick=function(){if(state.messages.length&&state.id!==pr.id)saveProject(false);state=Object.assign(defaultState(),JSON.parse(JSON.stringify(pr)));saveCurrent();render();closeD($("dProjects"));toast("Opened")};
+    var d=document.createElement("button");d.className="btn";d.textContent="🗑";d.setAttribute("aria-label","Delete "+(pr.title||"project"));
+    d.onclick=function(){
+      if(!confirm("Delete this saved project?"))return;
+      writeProjects(projects().filter(function(x){return x.id!==pr.id}));renderProjects();toast("Deleted");
+    };
+    r.appendChild(t);r.appendChild(o);r.appendChild(d);box.appendChild(r);
+  });
+}
+$("bProjects").onclick=function(){renderProjects();open("dProjects")};
+$("bSave").onclick=function(){saveProject(true)};
+$("bNew").onclick=newProject;
+$("bContinue").onclick=cont;
+$("bWrap").onclick=wrap;
+$("bSend").onclick=send;
+$("input").addEventListener("input",autoGrow);
+$("input").addEventListener("keydown",function(e){
+  if(e.key==="Enter"&&!e.shiftKey&&(e.metaKey||e.ctrlKey||window.innerWidth>700)){e.preventDefault();send()}
+});
+
+/* init + self-test */
+loadAll();render();window.__councilLoaded=true;
+if(!state.messages.length)setStatus("Ready");
+window.addEventListener("beforeunload",function(){saveCurrent()});
+document.addEventListener("visibilitychange",function(){if(document.hidden)saveCurrent()});
+(function selfTest(){
+  try{
+    var r=[];
+    r.push(keywords("How do I fix my slow website?").indexOf("website")>=0);
+    var old=state.problem;state.problem="slow website speed";
+    r.push(onTopic("Check the website images"));r.push(!onTopic("Bananas are yellow"));
+    state.problem=old;
+    r.push(extractHtml("```html\n<!DOCTYPE html><html></html>\n```").indexOf("<!DOCTYPE")===0);r.push(staticCheck("<html><script>var a=;<\/script></html>").length>0);
+    var lr=localReply(state.members[0],0);r.push(typeof lr.text==="string"&&lr.text.length>5);turn=0;
+    window.__councilTests=r;
+    if(r.indexOf(false)>=0)console.warn("AI Council self-test failed",r);
+  }catch(e){console.warn("self-test error",e)}
+})();
+})();
+</script>
+</body>
+</html>
