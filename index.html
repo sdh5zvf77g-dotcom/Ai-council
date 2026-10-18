@@ -128,8 +128,8 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <h2 id="tSet">⚙ Settings</h2>
   <div class="chk"><input type="checkbox" id="sContinue"><label for="sContinue">Show the Continue button</label></div>
   <div class="chk"><input type="checkbox" id="sAutoPilot"><label for="sAutoPilot">Autopilot: keep going without tapping Continue</label></div>
-  <label for="sMaxRuns">Autopilot max rounds (1–30)</label>
-  <input type="number" id="sMaxRuns" min="1" max="30">
+  <label for="sMaxRuns">Autopilot max rounds (0 = keep going until solved, up to 100)</label>
+  <input type="number" id="sMaxRuns" min="0" max="100">
   <div class="chk"><input type="checkbox" id="sFocus"><label for="sFocus">Stay on target (keep the panel on the problem)</label></div>
   <label for="sStrict">Focus strictness</label>
   <select id="sStrict"><option value="gentle">Gentle – flag drift only</option><option value="strict">Strict – drop drifting replies and retry</option></select>
@@ -181,6 +181,13 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 
 <script>
 (function(){
+function banner(m){var b=document.getElementById("errBanner");if(!b){b=document.createElement("div");b.id="errBanner";b.style.cssText="position:fixed;top:0;left:0;right:0;z-index:99;background:#b00020;color:#fff;padding:10px 12px;font:13px/1.4 -apple-system,sans-serif;white-space:pre-wrap";document.body.appendChild(b)}b.textContent="AI Council error: "+m}
+window.addEventListener("error",function(e){banner((e.message||"unknown")+(e.lineno?" (line "+e.lineno+")":""))});
+window.addEventListener("load",function(){setTimeout(function(){if(!window.__councilLoaded)banner("the app script did not start. Check that all files are in the repo root and reload.")},800)});
+})();
+</script>
+<script>
+(function(){
 "use strict";
 var $=function(id){return document.getElementById(id)};
 var KEY="aiCouncil.v1";
@@ -197,7 +204,7 @@ function defaultState(){
     members:[{name:"Ava",role:"Strategist",on:true},{name:"Ben",role:"Skeptic",on:true},{name:"Cleo",role:"Builder",on:true},{name:"Dev",role:"Researcher",on:false},{name:"Eli",role:"Creative",on:false}],
     wrapped:false,board:{points:[],concerns:[],steps:[]}};
 }
-function defaultSettings(){return {showContinue:true,autopilot:false,maxRuns:8,focus:false,strict:"gentle",autosave:true,light:false,rounds:3,engine:"local",url:"",model:"",key:""}}
+function defaultSettings(){return {showContinue:true,autopilot:false,maxRuns:0,focus:false,strict:"gentle",autosave:true,light:false,rounds:3,engine:"local",url:"",model:"",key:""}}
 function uid(){return "p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 var state=defaultState(), settings=defaultSettings(), busy=false, turn=0, autoActive=false, autoRuns=0;
 
@@ -403,8 +410,8 @@ function driftReply(member){
   var off=["Speaking of which, have you considered a totally different project?","Unrelated, but the weather has been interesting lately.","Maybe we should talk about something else entirely."];
   return off[turn%off.length];
 }
-function callRemote(system,user){
-  var ctl=new AbortController();var to=setTimeout(function(){ctl.abort()},25000);
+function callRemote(system,user,ms){
+  var ctl=new AbortController();var to=setTimeout(function(){ctl.abort()},ms||30000);
   var h={"Content-Type":"application/json"};if(settings.key)h.Authorization="Bearer "+settings.key;
   return fetch(settings.url,{method:"POST",headers:h,signal:ctl.signal,
     body:JSON.stringify({model:settings.model,messages:[{role:"system",content:system},{role:"user",content:user}]})})
@@ -428,15 +435,15 @@ function remoteReply(member){
   var phase=Math.floor(cm.length/active);
   var hint=phase===0?"This is the opening round: propose your own angle, and respond to anyone who already spoke.":
            phase===1?"Respond directly to colleagues: agree, challenge, or refine. Do not just restate your earlier point.":
-           "We are converging: resolve disagreements and move toward one joint recommendation.";
-  var sys="You are "+member.name+", the "+member.role+" on a panel of colleagues solving the user's problem together. Read the transcript. Reply in 2-4 sentences, addressing colleagues by name: explicitly build on, challenge or refine at least one point someone else made, and add one new idea of your own. Never repeat earlier points. "+hint+" Output only your message, with no name prefix. "+focusPrefix();
+           "We are converging: resolve disagreements. Once a plan is agreed, the Builder must write the actual deliverable (complete code or the concrete fix) and the Skeptic must review it for bugs, until it is finished.";
+  var sys="You are "+member.name+", the "+member.role+" on a panel of colleagues solving the user's problem together. Read the transcript. Reply in 2-4 sentences (unless you are the Builder delivering the actual work, then give it in full), addressing colleagues by name: explicitly build on, challenge or refine at least one point someone else made, and add one new idea of your own. Never repeat earlier points. "+hint+" Output only your message, with no name prefix. "+focusPrefix();
   var usr="Problem: "+state.problem+"\n\nTranscript so far:\n"+transcript()+(boardSummaryText()?"\n\nPanel status:\n"+boardSummaryText():"")+"\n\nYour turn, "+member.name+".";
   return callRemote(sys,usr).then(function(t){
     t=t.replace(new RegExp("^\\s*"+member.name+"\\s*(\\([^)]*\\))?\\s*:\\s*","i"),"");
     var to=null;
     state.members.forEach(function(x){if(x.name!==member.name&&!to&&t.indexOf(x.name)>=0)to=x.name});
     var kind=/\b(but|however|risk|concern|disagree|challenge|worry|careful)\b/i.test(t)?"challenge":(to?"build":"propose");
-    var first=t.split(/(?<=[.!?])\s/)[0];
+    var first=(t.match(/^[\s\S]*?[.!?](\s|$)/)||[t])[0];
     return {text:t,claim:snip(first,14),to:to,kind:kind};
   });
 }
@@ -488,11 +495,31 @@ function converged(){
   var tp=topPoint();
   return skepticOk&&!!tp&&tp.support.length>=Math.min(1,active-1);
 }
+function judge(){
+  return callRemote("You judge whether a panel has fully solved the user's problem or produced the finished deliverable (for an app or fix, the complete working code or concrete fix must already be in the transcript, and reviewed with no open concerns). Reply exactly 'DONE' if finished, otherwise 'CONTINUE: <what is still missing>'.",
+    "Problem: "+state.problem+"\n\nTranscript:\n"+transcript()).then(function(t){
+    return /^\s*DONE\b/i.test(t)?{done:true}:{done:false,missing:t.replace(/^\s*CONTINUE:?\s*/i,"").slice(0,300)};
+  });
+}
 function autoNext(){
   if(state.wrapped||!settings.autopilot){autoActive=false;syncControls();return}
   autoRuns++;
+  var cap=settings.maxRuns>0?settings.maxRuns:100;
+  var remote=settings.engine==="custom"&&settings.url;
+  if(remote){
+    busy=true;syncControls();setStatus("Checking if the problem is solved…");
+    judge().then(function(j){
+      busy=false;setStatus("");
+      if(!autoActive||!settings.autopilot){autoActive=false;syncControls();return}
+      if(j.done){autoActive=false;toast("Problem solved ✔");wrap();return}
+      if(autoRuns>=cap){autoActive=false;add("System","Autopilot stopped after "+autoRuns+" rounds. Still missing: "+(j.missing||"unknown"));render();wrap();return}
+      add("System","Not finished yet. Still missing: "+(j.missing||"more work")+" Address this next.");render();
+      setTimeout(function(){if(settings.autopilot&&autoActive&&!state.wrapped)runRound();else{autoActive=false;syncControls()}},500);
+    },function(){busy=false;setStatus("");autoRuns--;setTimeout(function(){if(settings.autopilot&&autoActive&&!state.wrapped)runRound();else{autoActive=false;syncControls()}},2000)});
+    return;
+  }
   if(converged()){autoActive=false;toast("Panel reached agreement ✔");wrap();return}
-  if(autoRuns>=settings.maxRuns){
+  if(autoRuns>=cap){
     autoActive=false;add("System","Autopilot stopped after "+autoRuns+" rounds without full agreement. Wrapping up with what the panel has so far.");render();wrap();return;
   }
   setTimeout(function(){if(settings.autopilot&&autoActive&&!state.wrapped)runRound();else{autoActive=false;syncControls()}},700);
@@ -541,8 +568,8 @@ function wrap(){
   function done(txt){add("System",txt);state.wrapped=true;busy=false;render();autosave();toast("Wrapped up ✔")}
   busy=true;syncControls();setStatus("Panel is agreeing a summary…");
   if(settings.engine==="custom"&&settings.url){
-    callRemote("You write the joint conclusion of a panel discussion. Use the transcript. Output: 1) the agreed recommendation, 2) the main concerns still open, 3) 3 concrete next steps. Be concise and credit members by name.",
-      "Problem: "+state.problem+"\n\nTranscript:\n"+transcript())
+    callRemote("You write the joint conclusion of a panel discussion. Use the transcript. Output: 1) the agreed recommendation, 2) the FINISHED deliverable in full (complete code in one block if it is an app or fix), 3) any concerns still open. Credit members by name.",
+      "Problem: "+state.problem+"\n\nTranscript:\n"+transcript(),120000)
       .then(function(t){done("Summary for: "+state.problem+"\n\n"+t)},function(){done(localSummary())});
   }else done(localSummary());
 }
@@ -615,7 +642,7 @@ $("bAuto").onclick=function(){
   syncControls();
 };
 $("sAutoPilot").addEventListener("change",function(){settings.autopilot=$("sAutoPilot").checked;saveSettings();syncControls()});
-$("sMaxRuns").addEventListener("change",function(){var v=Math.max(1,Math.min(30,parseInt($("sMaxRuns").value,10)||8));settings.maxRuns=v;$("sMaxRuns").value=v;saveSettings()});
+$("sMaxRuns").addEventListener("change",function(){var v=Math.max(0,Math.min(100,isNaN(parseInt($("sMaxRuns").value,10))?30:parseInt($("sMaxRuns").value,10)));settings.maxRuns=v;$("sMaxRuns").value=v;saveSettings()});
 $("bFocus").onclick=function(){
   settings.focus=!settings.focus;saveSettings();render();
   toast(settings.focus?"Stay on target on 🎯":"Stay on target off");
@@ -692,7 +719,7 @@ $("input").addEventListener("keydown",function(e){
 });
 
 /* init + self-test */
-loadAll();render();
+loadAll();render();window.__councilLoaded=true;
 if(!state.messages.length)setStatus("Ready");
 window.addEventListener("beforeunload",function(){saveCurrent()});
 document.addEventListener("visibilitychange",function(){if(document.hidden)saveCurrent()});
