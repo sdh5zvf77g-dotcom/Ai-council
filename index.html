@@ -1,0 +1,2176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="AI Council">
+<meta name="application-name" content="AI Council">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b0d17">
+<title>AI Council</title>
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root {
+  --bg: #0b0d17;
+  --bg2: #11142a;
+  --panel: #161a32;
+  --panel2: #1e2340;
+  --border: #2a3055;
+  --text: #eef0ff;
+  --muted: #8b92b8;
+  --accent: #7c8cff;
+  --accent2: #3dd9c5;
+  --ok: #4ade80;
+  --warn: #fbbf24;
+  --danger: #f87171;
+  --radius: 12px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+}
+body.light {
+  --bg: #f5f6fc;
+  --bg2: #ffffff;
+  --panel: #ffffff;
+  --panel2: #eef0f8;
+  --border: #d4d8ec;
+  --text: #15182b;
+  --muted: #5c638a;
+  --accent: #4f5ef0;
+  --accent2: #0d9488;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font: 15px/1.5 var(--font);
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  padding-top: env(safe-area-inset-top);
+  -webkit-text-size-adjust: 100%;
+  overflow: hidden;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; border: none; background: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ── Header ── */
+header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  z-index: 10;
+}
+.logo {
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.logo span { color: var(--accent2); }
+#phaseChip {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--panel2);
+  color: var(--accent2);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hdr-actions { margin-left: auto; display: flex; gap: 4px; }
+.icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: grid; place-items: center;
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+.icon-btn:hover, .icon-btn:active { background: var(--panel2); color: var(--text); }
+
+/* ── Status bar ── */
+#statusBar {
+  flex: none;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+#statusBar.show { display: flex; }
+#statusBar .spin {
+  width: 12px; height: 12px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Main chat ── */
+main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+.msg {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 100%;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.msg.you { align-items: flex-end; }
+.msg .bubble {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 13px;
+  max-width: 92%;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+.msg.you .bubble {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+}
+.msg .who {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.msg .who .role-tag {
+  font-weight: 500;
+  opacity: 0.7;
+}
+.msg.system .bubble {
+  background: transparent;
+  border-style: dashed;
+  color: var(--muted);
+  font-size: 0.88rem;
+  text-align: center;
+  max-width: 100%;
+}
+.msg .bubble img { max-width: 100%; border-radius: 8px; margin-top: 6px; }
+.msg .meta { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+
+/* Board / research cards */
+.card {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  font-size: 0.88rem;
+}
+.card summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--accent2);
+  list-style: none;
+}
+.card summary::-webkit-details-marker { display: none; }
+.card h4 {
+  margin: 8px 0 3px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.card ul { margin: 0; padding-left: 16px; }
+.card li { margin: 2px 0; }
+
+/* Deliverable */
+.deliv {
+  background: var(--panel2);
+  border: 1px solid var(--ok);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+.deliv .dh { font-weight: 700; color: var(--ok); margin-bottom: 6px; }
+.deliv .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+/* ── Bottom bar ── */
+footer {
+  flex: none;
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.toolbar {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.toolbar::-webkit-scrollbar { display: none; }
+.tbtn {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.tbtn:active, .tbtn.active { background: var(--panel2); color: var(--text); border-color: var(--accent); }
+.tbtn.primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+  font-weight: 600;
+}
+.tbtn.danger { color: var(--danger); }
+.input-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+#userInput {
+  flex: 1;
+  min-height: 42px;
+  max-height: 120px;
+  resize: none;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  line-height: 1.4;
+}
+#sendBtn {
+  width: 44px; height: 42px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 1.2rem;
+  display: grid; place-items: center;
+  flex: none;
+}
+#sendBtn:disabled { opacity: 0.4; }
+
+/* ── Dialogs ── */
+dialog {
+  border: none;
+  border-radius: 16px;
+  background: var(--panel);
+  color: var(--text);
+  padding: 0;
+  max-width: 96vw;
+  width: 420px;
+  max-height: 88dvh;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+dialog::backdrop { background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); }
+.dlg {
+  padding: 18px 16px;
+  overflow-y: auto;
+  max-height: 88dvh;
+}
+.dlg h2 { font-size: 1.15rem; margin-bottom: 12px; }
+.dlg label { display: block; margin: 12px 0 4px; font-weight: 600; font-size: 0.88rem; }
+.dlg input[type=text], .dlg input[type=password], .dlg input[type=number],
+.dlg select, .dlg textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 11px;
+  font-size: 16px;
+}
+.dlg textarea { min-height: 80px; resize: vertical; }
+.dlg .hint { color: var(--muted); font-size: 0.78rem; margin: 3px 0 0; }
+.dlg .chk { display: flex; gap: 10px; align-items: center; margin: 10px 0; }
+.dlg .chk input { width: 20px; height: 20px; flex: none; }
+.dlg .chk label { margin: 0; font-weight: 500; }
+.dfoot {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.btn.primary { background: var(--accent); color: #fff; border-color: transparent; }
+.btn.danger { color: var(--danger); }
+
+/* Members */
+.member-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px;
+  margin: 6px 0;
+}
+.member-row input[type=text] { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; }
+.member-row select { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+
+/* Projects */
+.proj-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  margin: 6px 0;
+}
+.proj-row .info { flex: 1; min-width: 0; }
+.proj-row .info b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.proj-row .info small { color: var(--muted); }
+
+/* Provider chips */
+.provider-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 8px 0;
+}
+.pchip {
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.pchip:active, .pchip.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+
+/* Toast */
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(100px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  background: var(--text);
+  color: var(--bg);
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+  z-index: 100;
+  max-width: 90vw;
+  text-align: center;
+}
+#toast.show { opacity: 1; }
+
+/* Preview dialog */
+#dPreview {
+  width: 96vw;
+  height: 92dvh;
+  max-width: none;
+  max-height: 92dvh;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+#dPreview[open] { display: flex; }
+.pvbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  flex: none;
+}
+#pvFrame { flex: 1; width: 100%; border: 0; background: #fff; }
+
+/* Empty state */
+.empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  color: var(--muted);
+  gap: 12px;
+}
+.empty h3 { color: var(--text); font-size: 1.2rem; }
+.empty p { max-width: 280px; font-size: 0.9rem; }
+.tpl-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+  margin-top: 8px;
+}
+.tpl-btn {
+  padding: 12px 10px;
+  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: center;
+}
+.tpl-btn:active { border-color: var(--accent); }
+
+/* Utility */
+.hidden { display: none !important; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">AI <span>Council</span></div>
+  <div id="phaseChip">Idle</div>
+  <div class="hdr-actions">
+    <button class="icon-btn" id="bProjects" title="Projects" aria-label="Projects">📁</button>
+    <button class="icon-btn" id="bMembers" title="Team" aria-label="Team members">👥</button>
+    <button class="icon-btn" id="bSettings" title="Settings" aria-label="Settings">⚙️</button>
+  </div>
+</header>
+
+<div id="statusBar"><div class="spin"></div><span id="statusText">Working…</span></div>
+
+<main id="chat">
+  <div class="empty" id="emptyState">
+    <h3>AI Council</h3>
+    <p>A multi-agent team that researches, plans deeply, builds, and tests web apps for you.</p>
+    <div class="tpl-grid">
+      <button class="tpl-btn" data-tpl="build">Build an app</button>
+      <button class="tpl-btn" data-tpl="research">Research a topic</button>
+      <button class="tpl-btn" data-tpl="improve">Improve this app</button>
+      <button class="tpl-btn" data-tpl="debug">Debug / fix code</button>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="toolbar" id="toolbar">
+    <button class="tbtn primary" id="bBuild" disabled>▶ Build</button>
+    <button class="tbtn" id="bResearch">🔍 Research</button>
+    <button class="tbtn" id="bContinue">↩ Continue</button>
+    <button class="tbtn" id="bUpload">⬆ Upload</button>
+    <button class="tbtn" id="bCamera">📷</button>
+    <button class="tbtn" id="bFiles">🗂</button>
+    <button class="tbtn" id="bRefs">📎</button>
+    <button class="tbtn" id="bDownload" class="hidden">⬇ DL</button>
+  </div>
+  <div class="input-row">
+    <textarea id="userInput" rows="1" placeholder="Describe a problem or app to build…" enterkeyhint="send"></textarea>
+    <button id="sendBtn" aria-label="Send">➤</button>
+  </div>
+</footer>
+
+<div id="toast"></div>
+
+<!-- ══════ Dialogs ══════ -->
+<dialog id="dSettings">
+  <div class="dlg">
+    <h2>Settings</h2>
+
+    <label>AI Engine</label>
+    <select id="sEngine">
+      <option value="local">Local (demo, no key)</option>
+      <option value="custom">Custom API endpoint</option>
+    </select>
+
+    <div id="customBlock" class="hidden">
+      <label>Provider presets</label>
+      <div class="provider-grid">
+        <button type="button" class="pchip" data-p="groq">Groq</button>
+        <button type="button" class="pchip" data-p="openrouter">OpenRouter</button>
+        <button type="button" class="pchip" data-p="gemini">Gemini</button>
+        <button type="button" class="pchip" data-p="nvidia">NVIDIA</button>
+      </div>
+
+      <label for="sUrl">Endpoint URL</label>
+      <input type="text" id="sUrl" placeholder="https://api.openai.com/v1/chat/completions" autocomplete="off" autocapitalize="off">
+
+      <label for="sModel">Model</label>
+      <input type="text" id="sModel" placeholder="llama-3.3-70b-versatile" autocomplete="off">
+
+      <label for="sKey">API Key</label>
+      <input type="password" id="sKey" placeholder="sk-…" autocomplete="off">
+
+      <p class="hint">Free keys: console.groq.com · openrouter.ai/keys · aistudio.google.com · build.nvidia.com</p>
+      <button type="button" class="btn" id="bTestKey" style="margin-top:8px">Test connection</button>
+    </div>
+
+    <h3 style="margin:18px 0 6px;font-size:1rem">Build behaviour</h3>
+    <div class="chk"><input type="checkbox" id="sBuildMode"><label for="sBuildMode">Build mode (research → plan → build → test/fix)</label></div>
+    <div class="chk"><input type="checkbox" id="sWeb"><label for="sWeb">Web research (Wikipedia + DuckDuckGo)</label></div>
+    <div class="chk"><input type="checkbox" id="sAutopilot"><label for="sAutopilot">Autopilot after each turn</label></div>
+
+    <label for="sPlanRounds">Min research/plan rounds before build (3–12)</label>
+    <input type="number" id="sPlanRounds" min="3" max="12" value="6">
+
+    <label for="sBuildIters">Max build/fix attempts (1–8)</label>
+    <input type="number" id="sBuildIters" min="1" max="8" value="6">
+
+    <div class="chk"><input type="checkbox" id="sLight"><label for="sLight">Light theme</label></div>
+    <div class="chk"><input type="checkbox" id="sAutosave"><label for="sAutosave">Autosave projects</label></div>
+
+    <div class="dfoot">
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn primary" id="bSaveSettings">Save</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dMembers">
+  <div class="dlg">
+    <h2>Council members</h2>
+    <p class="hint">Each member has a role that shapes how they think. Toggle, rename, or change roles.</p>
+    <div id="membersList"></div>
+    <div class="dfoot">
+      <button class="btn" id="bAddMember">+ Add</button>
+      <button class="btn primary" data-close>Done</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dProjects">
+  <div class="dlg">
+    <h2>Projects</h2>
+    <div id="projectsList"></div>
+    <div class="dfoot">
+      <button class="btn" id="bNewProject">+ New</button>
+      <button class="btn" id="bExport">Export</button>
+      <button class="btn primary" data-close>Done</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dRefs">
+  <div class="dlg">
+    <h2>Reference notes</h2>
+    <p class="hint">These notes are injected into every team member’s context.</p>
+    <textarea id="refsInput" placeholder="Paste constraints, APIs, design notes…"></textarea>
+    <div class="dfoot">
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn primary" id="bSaveRefs">Save</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dFiles">
+  <div class="dlg">
+    <h2>Workspace files</h2>
+    <p class="hint">Uploaded or generated files available to the team.</p>
+    <div id="filesList"></div>
+    <div class="dfoot">
+      <button class="btn" data-close>Close</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dDocs">
+  <div class="dlg">
+    <h2>Knowledge docs</h2>
+    <p class="hint">Upload .txt / .md / .json / .csv. The team reads them every turn.</p>
+    <input type="file" id="docInput" accept=".txt,.md,.json,.csv,.html" multiple style="margin:8px 0">
+    <div id="docsList"></div>
+    <div class="dfoot">
+      <button class="btn primary" data-close>Done</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dCamera">
+  <div class="dlg">
+    <h2>Camera</h2>
+    <p class="hint">Capture a frame for the team (vision models only).</p>
+    <video id="camVideo" autoplay playsinline style="width:100%;border-radius:10px;background:#000;max-height:50vh"></video>
+    <canvas id="camCanvas" class="hidden"></canvas>
+    <div class="dfoot">
+      <button class="btn" id="bCamStop">Stop</button>
+      <button class="btn primary" id="bCamSnap">Capture</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dConfirm">
+  <div class="dlg">
+    <h2 id="tConfirm">Confirm</h2>
+    <p id="confirmMsg"></p>
+    <div class="dfoot">
+      <button class="btn" id="confirmNo">Cancel</button>
+      <button class="btn primary" id="confirmYes">Yes</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dPrompt">
+  <div class="dlg">
+    <h2 id="tPrompt">Input</h2>
+    <p id="promptMsg"></p>
+    <input type="text" id="promptVal">
+    <div class="dfoot">
+      <button class="btn" id="promptNo">Cancel</button>
+      <button class="btn primary" id="promptYes">OK</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dPreview">
+  <div class="pvbar">
+    <strong id="pvTitle">Preview</strong>
+    <button class="btn" data-close>Close</button>
+  </div>
+  <iframe id="pvFrame" sandbox="allow-scripts" title="App preview"></iframe>
+</dialog>
+
+<script>
+(function () {
+"use strict";
+
+/* ══════════════════════════════════════════════
+   AI Council v2 — clean multi-agent builder
+   ══════════════════════════════════════════════ */
+
+const KEY = "aicouncil.v2";
+const ROLE_COLORS = {
+  Strategist: "#7c8cff",
+  Skeptic: "#f87171",
+  Builder: "#4ade80",
+  Researcher: "#3dd9c5",
+  Creative: "#fbbf24"
+};
+
+const ROLE_PROMPTS = {
+  Strategist: `You are the Tech Lead / Architect. Your job is deep strategic thinking:
+- Clarify the real goal and success criteria
+- Design architecture that fits a single-file (or small) mobile web app
+- Sequence work so the highest-risk pieces are validated first
+- Produce a concrete, shared plan the whole team can execute
+Be specific. Vague goals are failures.`,
+
+  Researcher: `You are the deep research engineer. You MUST use any TEAM TOOLS / WEB RESEARCH block present in the prompt.
+Rules:
+1. First section MUST be "Findings from tools:" with 3–8 concrete bullet points drawn from the research (quote or paraphrase by name). Never invent citations.
+2. Cover: relevant APIs, mobile/Safari constraints, storage options, edge cases, proven patterns.
+3. Prefer vanilla JS + CSS that works offline on iPhone Safari.
+4. Shallow generic advice without tool use is a failure.`,
+
+  Skeptic: `You are the senior QA / Risk Lead. Your job is to force depth and quality:
+- Surface real failure modes, missing edge cases, mobile/Safari bugs
+- Challenge vague plans and incomplete acceptance criteria
+- Demand concrete tests and definition of done
+- Never rubber-stamp weak research or incomplete designs
+Be constructive but ruthless.`,
+
+  Builder: `You are a senior full-stack engineer specialising in single-file mobile web apps.
+- Translate the agreed plan into complete, working code — never placeholders or TODOs
+- Prefer vanilla JS, CSS variables, modern but widely-supported APIs
+- Make the UI clean, touch-friendly, and dark-theme by default
+- When delivering, return the FULL HTML document ready to run
+Code quality and completeness matter more than speed.`,
+
+  Creative: `You are the product / UX lead. Improve clarity, flow, visual hierarchy and the feeling of the app while staying practical for a single-file mobile web app. Suggest better interaction patterns and micro-copy.`
+};
+
+const PHASES = [
+  { id: "research", label: "Deep Research", minRounds: 0 },
+  { id: "architecture", label: "Architecture", minRounds: 2 },
+  { id: "plan", label: "Detailed Plan", minRounds: 4 },
+  { id: "converge", label: "Converge", minRounds: 6 },
+  { id: "build", label: "Build & Test", minRounds: 999 }
+];
+
+/* ── State ── */
+function uid() {
+  return "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+function defaultState() {
+  return {
+    id: uid(),
+    title: "Untitled",
+    created: Date.now(),
+    updated: Date.now(),
+    problem: "",
+    messages: [],
+    members: [
+      { name: "Ava", role: "Strategist", on: true },
+      { name: "Ben", role: "Skeptic", on: true },
+      { name: "Cleo", role: "Builder", on: true },
+      { name: "Dev", role: "Researcher", on: true },
+      { name: "Eli", role: "Creative", on: false }
+    ],
+    board: { points: [], concerns: [], steps: [] },
+    research: "",
+    buildHistory: [],
+    refs: "",
+    docs: [],
+    files: [],
+    phase: "idle"
+  };
+}
+
+function defaultSettings() {
+  return {
+    engine: "local",
+    url: "",
+    model: "",
+    key: "",
+    provider: "openai",
+    buildMode: true,
+    webResearch: true,
+    autopilot: false,
+    planRounds: 6,
+    buildIters: 6,
+    light: false,
+    autosave: true,
+    showContinue: true
+  };
+}
+
+let state = defaultState();
+let settings = defaultSettings();
+let busy = false;
+let building = false;
+let stopBuild = false;
+let autoActive = false;
+let autoRuns = 0;
+let liveStream = null;
+let pendingImage = null;
+
+/* ── Storage ── */
+function sGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function sSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+
+function loadAll() {
+  try {
+    const s = JSON.parse(sGet(KEY + ".settings") || "null");
+    if (s) settings = Object.assign(defaultSettings(), s);
+  } catch (e) {}
+  try {
+    const p = JSON.parse(sGet(KEY + ".current") || "null");
+    if (p && p.messages) state = Object.assign(defaultState(), p);
+  } catch (e) {}
+}
+
+function saveCurrent() {
+  state.updated = Date.now();
+  sSet(KEY + ".current", JSON.stringify(state));
+}
+
+function saveSettings() {
+  sSet(KEY + ".settings", JSON.stringify(settings));
+}
+
+function projects() {
+  try { return JSON.parse(sGet(KEY + ".projects") || "[]"); } catch (e) { return []; }
+}
+
+function writeProjects(list) {
+  return sSet(KEY + ".projects", JSON.stringify(list.slice(0, 40)));
+}
+
+function saveProject(manual) {
+  if (!state.messages.length && !state.problem) {
+    if (manual) toast("Nothing to save yet");
+    return;
+  }
+  saveCurrent();
+  const list = projects();
+  const i = list.findIndex(p => p.id === state.id);
+  const copy = JSON.parse(JSON.stringify(state));
+  if (i >= 0) list[i] = copy;
+  else list.unshift(copy);
+  const ok = writeProjects(list);
+  if (manual) toast(ok ? "Project saved" : "Storage full — use Export");
+}
+
+function autosave() {
+  saveCurrent();
+  if (settings.autosave) saveProject(false);
+}
+
+/* ── UI helpers ── */
+const $ = id => document.getElementById(id);
+
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+function setStatus(text) {
+  const bar = $("statusBar");
+  if (!text) {
+    bar.classList.remove("show");
+    return;
+  }
+  $("statusText").textContent = text;
+  bar.classList.add("show");
+}
+
+function openDialog(id) {
+  const d = $(id);
+  if (d && !d.open) d.showModal();
+}
+
+function closeDialog(el) {
+  const d = typeof el === "string" ? $(el) : el;
+  if (d && d.open) d.close();
+}
+
+function uiConfirm(message, title) {
+  return new Promise(res => {
+    $("tConfirm").textContent = title || "Confirm";
+    $("confirmMsg").textContent = message || "";
+    const done = v => {
+      $("confirmYes").onclick = null;
+      $("confirmNo").onclick = null;
+      closeDialog("dConfirm");
+      res(v);
+    };
+    $("confirmYes").onclick = () => done(true);
+    $("confirmNo").onclick = () => done(false);
+    openDialog("dConfirm");
+  });
+}
+
+function uiPrompt(message, def, title) {
+  return new Promise(res => {
+    $("tPrompt").textContent = title || "Input";
+    $("promptMsg").textContent = message || "";
+    $("promptVal").value = def || "";
+    const done = v => {
+      $("promptYes").onclick = null;
+      $("promptNo").onclick = null;
+      closeDialog("dPrompt");
+      res(v);
+    };
+    $("promptYes").onclick = () => done(($("promptVal").value || "").trim() || null);
+    $("promptNo").onclick = () => done(null);
+    openDialog("dPrompt");
+    setTimeout(() => { try { $("promptVal").focus(); } catch (e) {} }, 50);
+  });
+}
+
+/* ── Rendering ── */
+function render() {
+  const chat = $("chat");
+  const empty = $("emptyState");
+  const hasMsgs = state.messages.length > 0;
+
+  if (!hasMsgs) {
+    chat.innerHTML = "";
+    chat.appendChild(empty);
+    empty.classList.remove("hidden");
+  } else {
+    empty.classList.add("hidden");
+    chat.innerHTML = "";
+    // Board summary
+    if (state.board && (state.board.points.length || state.board.concerns.length)) {
+      chat.appendChild(renderBoard());
+    }
+    // Research card
+    if (state.research) {
+      const c = document.createElement("details");
+      c.className = "card";
+      c.innerHTML = `<summary>🔍 Research findings</summary><div style="margin-top:6px;white-space:pre-wrap;font-size:0.85rem">${esc(state.research).slice(0, 3000)}</div>`;
+      chat.appendChild(c);
+    }
+    state.messages.forEach(m => chat.appendChild(renderMsg(m)));
+  }
+
+  updatePhaseChip();
+  syncControls();
+  scrollBottom();
+}
+
+function renderMsg(m) {
+  const div = document.createElement("div");
+  div.className = "msg " + (m.who === "You" ? "you" : m.who === "System" ? "system" : "");
+  const color = ROLE_COLORS[m.role] || "var(--muted)";
+  let whoHtml = "";
+  if (m.who !== "You" && m.who !== "System") {
+    whoHtml = `<div class="who"><span class="dot" style="background:${color}"></span>${esc(m.who)} <span class="role-tag">${esc(m.role || "")}</span></div>`;
+  }
+  let body = esc(m.text);
+  if (m.image && m.image.dataUrl) {
+    body += `<img src="${m.image.dataUrl}" alt="attached">`;
+  }
+  // Detect deliverable
+  if (m.kind === "deliverable" && m.code) {
+    div.innerHTML = whoHtml + `<div class="deliv"><div class="dh">✅ Deliverable v${m.version || "?"}</div><div>${body}</div><div class="actions"><button class="btn primary" data-preview="${m.version}">Preview</button><button class="btn" data-dl="${m.version}">Download</button></div></div>`;
+    div.querySelector("[data-preview]")?.addEventListener("click", () => previewBuild(m.version));
+    div.querySelector("[data-dl]")?.addEventListener("click", () => downloadBuild(m.version));
+  } else {
+    div.innerHTML = whoHtml + `<div class="bubble">${body}</div>`;
+  }
+  return div;
+}
+
+function renderBoard() {
+  const b = state.board;
+  const d = document.createElement("details");
+  d.className = "card";
+  d.open = true;
+  let html = "<summary>📋 Shared board</summary>";
+  if (b.points.length) {
+    html += "<h4>Agreed points</h4><ul>" + b.points.slice(-6).map(p =>
+      `<li>${esc(p.text)} <small>(${esc(p.by)}${p.support.length ? " + " + p.support.join(", ") : ""})</small></li>`
+    ).join("") + "</ul>";
+  }
+  if (b.concerns.length) {
+    html += "<h4>Open concerns</h4><ul>" + b.concerns.slice(-5).map(c =>
+      `<li>${esc(c.by)}: ${esc(c.text)}</li>`
+    ).join("") + "</ul>";
+  }
+  if (b.steps.length) {
+    html += "<h4>Build steps</h4><ul>" + b.steps.slice(-5).map(s =>
+      `<li>${esc(s.text)} <small>(${esc(s.by)})</small></li>`
+    ).join("") + "</ul>";
+  }
+  d.innerHTML = html;
+  return d;
+}
+
+function esc(s) {
+  return String(s || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function scrollBottom() {
+  const chat = $("chat");
+  requestAnimationFrame(() => { chat.scrollTop = chat.scrollHeight; });
+}
+
+function updatePhaseChip() {
+  const chip = $("phaseChip");
+  const map = {
+    idle: "Idle",
+    research: "🔍 Research",
+    architecture: "🏗 Architecture",
+    plan: "📐 Plan",
+    converge: "🤝 Converge",
+    build: "🛠 Build",
+    testing: "🧪 Testing",
+    done: "✅ Done"
+  };
+  chip.textContent = map[state.phase] || state.phase || "Idle";
+}
+
+function syncControls() {
+  const hasProblem = !!state.problem;
+  $("bBuild").disabled = (busy && !building) || !hasProblem;
+  $("bBuild").textContent = building ? "⏹ Stop" : "▶ Build";
+  $("bContinue").style.display = settings.showContinue && hasProblem ? "" : "none";
+  $("bDownload").classList.toggle("hidden", !state.buildHistory.length);
+  $("sendBtn").disabled = busy;
+}
+
+/* ── Board logic ── */
+function board() {
+  if (!state.board) state.board = { points: [], concerns: [], steps: [] };
+  return state.board;
+}
+
+function updateBoard(m) {
+  if (!m.claim || m.who === "You" || m.who === "System") return;
+  const b = board();
+  const entry = { by: m.who, text: m.claim, support: [] };
+  if (m.to) {
+    const all = b.points.concat(b.steps);
+    for (let i = all.length - 1; i >= 0; i--) {
+      if (all[i].by === m.to && m.kind !== "challenge") {
+        if (all[i].support.indexOf(m.who) < 0) all[i].support.push(m.who);
+        break;
+      }
+    }
+  }
+  if (m.kind === "challenge") b.concerns.push({ by: m.who, to: m.to, text: m.claim });
+  else if (m.role === "Builder") b.steps.push(entry);
+  else b.points.push(entry);
+  ["points", "concerns", "steps"].forEach(k => {
+    if (b[k].length > 14) b[k] = b[k].slice(-14);
+  });
+}
+
+function boardSummary() {
+  const b = board();
+  const parts = [];
+  const agreed = b.points.filter(p => p.support.length).map(p => p.text + " (" + p.by + ")");
+  if (agreed.length) parts.push("Backed points: " + agreed.slice(-4).join("; "));
+  if (b.concerns.length) parts.push("Open concerns: " + b.concerns.slice(-3).map(c => c.by + ": " + c.text).join("; "));
+  if (b.steps.length) parts.push("Build steps: " + b.steps.slice(-3).map(s => s.text).join("; "));
+  return parts.join("\n");
+}
+
+/* ── Model access ── */
+function isRemote() {
+  return settings.engine === "custom" && !!settings.url;
+}
+
+function callModel(system, user, opts) {
+  opts = opts || {};
+  const timeout = opts.ms || 90000;
+  const ctl = new AbortController();
+  const to = setTimeout(() => ctl.abort(), timeout);
+
+  let headers = { "Content-Type": "application/json" };
+  if (settings.key) headers["Authorization"] = "Bearer " + settings.key;
+
+  let body;
+  const provider = settings.provider || "openai";
+
+  if (provider === "anthropic") {
+    headers["x-api-key"] = settings.key;
+    headers["anthropic-version"] = "2023-06-01";
+    delete headers["Authorization"];
+    body = {
+      model: settings.model,
+      max_tokens: 4096,
+      system: system,
+      messages: [{ role: "user", content: user }]
+    };
+  } else if (provider === "gemini") {
+    // Gemini uses a different URL shape; we still post OpenAI-compatible if possible
+    body = {
+      model: settings.model,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user }
+      ]
+    };
+  } else {
+    // OpenAI-compatible (Groq, OpenRouter, NVIDIA, etc.)
+    let uContent = user;
+    if (opts.image && opts.image.dataUrl) {
+      uContent = [
+        { type: "text", text: String(user) },
+        { type: "image_url", image_url: { url: opts.image.dataUrl } }
+      ];
+    }
+    body = {
+      model: settings.model,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: uContent }
+      ],
+      temperature: 0.55,
+      max_tokens: 4096
+    };
+  }
+
+  return fetch(settings.url, {
+    method: "POST",
+    headers,
+    signal: ctl.signal,
+    body: JSON.stringify(body)
+  })
+    .then(r => {
+      clearTimeout(to);
+      if (!r.ok) {
+        return r.text().then(t => {
+          throw new Error("HTTP " + r.status + " " + String(t).replace(/\s+/g, " ").slice(0, 180));
+        });
+      }
+      return r.json();
+    })
+    .then(j => {
+      let text;
+      if (provider === "anthropic") {
+        text = (j.content || []).map(c => c.text || "").join("");
+      } else {
+        text = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+      }
+      if (!text) throw new Error("Empty reply from model");
+      return String(text).trim();
+    })
+    .catch(e => {
+      clearTimeout(to);
+      if (e && e.name === "AbortError") throw new Error("Timed out waiting for the model");
+      throw e;
+    });
+}
+
+/* ── Local (demo) replies — lightweight but structured ── */
+const LOCAL_CLAIMS = {
+  Strategist: [
+    "define clear success criteria and a minimal viable scope first",
+    "sequence the highest-risk technical piece before UI polish",
+    "keep the data model tiny and the UI states explicit",
+    "ship a working core loop before adding secondary features"
+  ],
+  Skeptic: [
+    "validate the core assumption with a concrete test case",
+    "account for offline / Safari private-mode storage limits",
+    "define what 'done' looks like before writing more code",
+    "check edge cases: empty state, long text, slow network"
+  ],
+  Builder: [
+    "implement a minimal vertical slice that already runs",
+    "structure the HTML with clear sections and CSS variables",
+    "keep all logic in one file but modular functions",
+    "add a simple smoke-test path the sandbox can verify"
+  ],
+  Researcher: [
+    "prefer well-supported browser APIs over experimental ones",
+    "look for proven single-file patterns and localStorage limits",
+    "note mobile keyboard and viewport behaviour early",
+    "gather constraints that affect architecture before coding"
+  ],
+  Creative: [
+    "simplify the first-run experience to one clear action",
+    "use progressive disclosure so the UI stays calm",
+    "make status and progress obvious without clutter",
+    "choose micro-copy that guides without explaining everything"
+  ]
+};
+
+function localReply(member) {
+  const active = state.members.filter(m => m.on).length || 1;
+  const cm = state.messages.filter(m => m.who !== "You" && m.who !== "System");
+  const phaseIdx = Math.min(Math.floor(cm.length / active), 3);
+  const claims = LOCAL_CLAIMS[member.role] || LOCAL_CLAIMS.Strategist;
+  const claim = claims[cm.filter(m => m.who === member.name).length % claims.length];
+  const phaseHints = [
+    "In the research phase I would focus on understanding constraints before any design.",
+    "For architecture we should lock the data shape and main screens now.",
+    "The plan needs explicit acceptance criteria the Skeptic can test against.",
+    "We should converge on one concrete plan and hand it to the Builder."
+  ];
+  const text = phaseHints[phaseIdx] + " Specifically: " + claim + ".";
+  return {
+    text,
+    claim,
+    kind: phaseIdx < 2 ? "propose" : "build",
+    role: member.role
+  };
+}
+
+/* ── Web research ── */
+function corsFetch(url) {
+  return fetch(url, { mode: "cors" })
+    .then(r => { if (r.ok) return r; throw new Error("direct"); })
+    .catch(() => fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent(url))
+      .then(r => { if (r.ok) return r; throw new Error("proxy"); }))
+    .catch(() => fetch("https://corsproxy.io/?" + encodeURIComponent(url))
+      .then(r => { if (r.ok) return r; throw new Error("proxy2"); }));
+}
+
+function searchWiki(q) {
+  return fetch("https://en.wikipedia.org/w/api.php?action=opensearch&search=" + encodeURIComponent(q) + "&limit=4&namespace=0&format=json&origin=*")
+    .then(r => r.ok ? r.json() : null)
+    .then(j => {
+      if (!j || !j[1] || !j[1].length) return [];
+      return Promise.all(j[1].slice(0, 3).map(t =>
+        fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + encodeURIComponent(t))
+          .then(r => r.ok ? r.json() : null)
+          .catch(() => null)
+      )).then(pages => pages.filter(Boolean).map(p =>
+        p.extract ? ("Wikipedia — " + (p.title || "") + ": " + String(p.extract).slice(0, 420)) : null
+      ).filter(Boolean));
+    })
+    .catch(() => []);
+}
+
+function searchDdg(q) {
+  const instant = fetch("https://api.duckduckgo.com/?q=" + encodeURIComponent(q) + "&format=json&no_redirect=1&no_html=1&skip_disambig=1")
+    .then(r => r.ok ? r.json() : null)
+    .then(j => {
+      if (!j) return [];
+      const bits = [];
+      if (j.AbstractText) bits.push("DuckDuckGo — " + (j.Heading || "summary") + ": " + String(j.AbstractText).slice(0, 420));
+      if (j.Answer) bits.push("Answer: " + String(j.Answer).slice(0, 240));
+      (j.RelatedTopics || []).slice(0, 4).forEach(t => {
+        if (t.Text) bits.push("Related: " + String(t.Text).slice(0, 200));
+        else if (t.Topics) t.Topics.slice(0, 2).forEach(x => { if (x.Text) bits.push("Related: " + String(x.Text).slice(0, 160)); });
+      });
+      return bits;
+    })
+    .catch(() => []);
+
+  const html = corsFetch("https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q))
+    .then(r => r.text())
+    .then(html => {
+      const bits = [];
+      const re = /class="result__snippet"[^>]*>([\s\S]*?)<\/a>/gi;
+      let m, n = 0;
+      while ((m = re.exec(html)) && n < 4) {
+        const t = m[1].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+        if (t.length > 30) { bits.push("DDG result: " + t.slice(0, 220)); n++; }
+      }
+      return bits;
+    })
+    .catch(() => []);
+
+  return Promise.all([instant, html]).then(([a, b]) => a.concat(b));
+}
+
+async function doResearch(topic) {
+  setStatus("Researching: " + topic.slice(0, 40) + "…");
+  const queries = [
+    topic,
+    topic + " best practices",
+    topic + " mobile web app",
+    topic + " javascript"
+  ].slice(0, 3);
+
+  const results = [];
+  for (const q of queries) {
+    const [w, d] = await Promise.all([searchWiki(q), searchDdg(q)]);
+    results.push(...w, ...d);
+  }
+  // Dedupe and trim
+  const seen = new Set();
+  const unique = [];
+  for (const r of results) {
+    const key = r.slice(0, 80);
+    if (!seen.has(key)) {
+      seen.add(key);
+      unique.push(r);
+    }
+  }
+  const text = unique.slice(0, 12).join("\n\n");
+  state.research = text || "No useful public research results returned for this query.";
+  setStatus("");
+  return state.research;
+}
+
+/* ── Phase management ── */
+function currentPhase() {
+  const active = state.members.filter(m => m.on).length || 1;
+  const rounds = Math.floor(state.messages.filter(m => m.who !== "You" && m.who !== "System").length / active);
+  const min = settings.planRounds || 6;
+  if (state.phase === "build" || state.phase === "testing" || state.phase === "done") return state.phase;
+  if (rounds < 2) return "research";
+  if (rounds < Math.max(3, Math.floor(min * 0.5))) return "architecture";
+  if (rounds < min) return "plan";
+  return "converge";
+}
+
+function phaseHint(phase) {
+  const map = {
+    research: `PHASE — DEEP RESEARCH (no code yet)
+Researcher must lead with concrete findings from tools. Everyone challenges weak assumptions.
+Cover domain knowledge, APIs, mobile/Safari constraints, data model options, and edge cases.
+Shallow research is not acceptable.`,
+
+    architecture: `PHASE — ARCHITECTURE
+Turn research into a clear architecture: data shapes, main screens/states, key functions, storage approach.
+Strategist owns the high-level design. Skeptic forces missing pieces into the open.
+Still no implementation code.`,
+
+    plan: `PHASE — DETAILED IMPLEMENTATION PLAN
+Produce a precise feature list, UI states, data model, and build order.
+The plan must be specific enough that the Builder can implement without guessing.
+Resolve every open concern. Define acceptance criteria.`,
+
+    converge: `PHASE — CONVERGE & HAND-OFF
+Lock the shared plan and acceptance criteria. Confirm research is solid.
+The Builder will next write the complete working app; the Skeptic will review it ruthlessly.`,
+
+    build: `PHASE — BUILD & TEST
+Builder writes complete working HTML. Sandbox tests it. Skeptic reviews. Fix until approved.`
+  };
+  return map[phase] || map.research;
+}
+
+/* ── Remote reply (core of deep thinking) ── */
+async function remoteReply(member) {
+  const phase = currentPhase();
+  state.phase = phase;
+  updatePhaseChip();
+
+  const system = [
+    ROLE_PROMPTS[member.role] || ROLE_PROMPTS.Strategist,
+    "",
+    "You are part of a multi-agent council building high-quality single-file mobile web apps.",
+    "Always be concrete. Prefer evidence over opinion. Never invent facts.",
+    "",
+    phaseHint(phase)
+  ].join("\n");
+
+  const tools = [];
+  if (state.research) {
+    tools.push("=== WEB RESEARCH (use these findings) ===\n" + state.research.slice(0, 3500));
+  }
+  if (state.refs) tools.push("=== REFERENCE NOTES ===\n" + state.refs.slice(0, 1500));
+  if (state.docs && state.docs.length) {
+    tools.push("=== KNOWLEDGE DOCS ===\n" + state.docs.map(d => d.name + ":\n" + String(d.text).slice(0, 800)).join("\n---\n").slice(0, 2000));
+  }
+
+  const transcript = state.messages.slice(-16).map(m => {
+    const who = m.who === "You" ? "USER" : m.who + (m.role ? " (" + m.role + ")" : "");
+    return who + ": " + String(m.text).slice(0, 600);
+  }).join("\n");
+
+  const user = [
+    "PROBLEM / GOAL:\n" + state.problem,
+    "",
+    tools.length ? "TEAM TOOLS:\n" + tools.join("\n\n") : "",
+    "",
+    "SHARED BOARD:\n" + (boardSummary() || "(empty)"),
+    "",
+    "RECENT TRANSCRIPT:\n" + transcript,
+    "",
+    "Your turn as " + member.name + " (" + member.role + "). Respond with substance. If you are the Researcher and tools are present, start with 'Findings from tools:'."
+  ].filter(Boolean).join("\n");
+
+  const img = pendingImage || null;
+  const text = await callModel(system, user, { ms: 100000, image: img });
+  pendingImage = null;
+
+  // Extract a short claim for the board
+  let claim = text.split(/[.!?]/)[0].slice(0, 120).trim();
+  if (claim.length < 12) claim = text.slice(0, 100);
+
+  return { text, claim, kind: "build", role: member.role };
+}
+
+/* ── Turn orchestration ── */
+function add(who, text, extra) {
+  const m = Object.assign({ who, text, ts: Date.now() }, extra || {});
+  state.messages.push(m);
+  if (m.claim) updateBoard(m);
+  autosave();
+  return m;
+}
+
+async function runTurn() {
+  if (busy) return;
+  busy = true;
+  syncControls();
+
+  try {
+    const active = state.members.filter(m => m.on);
+    if (!active.length) {
+      add("System", "No active members. Enable at least one in the Team panel.");
+      render();
+      return;
+    }
+
+    // Research gate on first turns
+    if (settings.webResearch && !state.research && state.problem) {
+      state.phase = "research";
+      updatePhaseChip();
+      await doResearch(state.problem);
+      add("System", "Research complete. Findings injected into the team context.");
+      render();
+    }
+
+    // Pick next member (round-robin by message count)
+    const counts = {};
+    active.forEach(m => { counts[m.name] = 0; });
+    state.messages.filter(m => m.who !== "You" && m.who !== "System").forEach(m => {
+      if (counts[m.who] !== undefined) counts[m.who]++;
+    });
+    active.sort((a, b) => counts[a.name] - counts[b.name]);
+    const member = active[0];
+
+    setStatus(member.name + " (" + member.role + ") is thinking…");
+    state.phase = currentPhase();
+    updatePhaseChip();
+
+    let reply;
+    if (isRemote()) {
+      try {
+        reply = await remoteReply(member);
+      } catch (e) {
+        add("System", "Model error: " + (e.message || e) + ". Falling back to local reasoning for this turn.");
+        reply = localReply(member);
+      }
+    } else {
+      reply = localReply(member);
+    }
+
+    add(member.name, reply.text, {
+      role: member.role,
+      claim: reply.claim,
+      kind: reply.kind
+    });
+    render();
+
+    // Autopilot / build mode
+    if (settings.buildMode || autoActive) {
+      await maybeAdvanceToBuild();
+    }
+  } finally {
+    busy = false;
+    setStatus("");
+    syncControls();
+  }
+}
+
+async function maybeAdvanceToBuild() {
+  const phase = currentPhase();
+  if (phase !== "converge" && phase !== "plan") return;
+
+  const active = state.members.filter(m => m.on).length || 1;
+  const rounds = Math.floor(state.messages.filter(m => m.who !== "You" && m.who !== "System").length / active);
+  if (rounds < (settings.planRounds || 6)) return;
+
+  // Ask a readiness judge
+  if (isRemote()) {
+    setStatus("Judging plan readiness…");
+    try {
+      const judgeSys = `You are a strict readiness judge for a software team.
+Reply with exactly READY if and only if ALL of the following are true:
+1. There is a concrete feature list / scope
+2. Architecture or data model is clear enough to implement
+3. Major risks or open concerns have been addressed or explicitly accepted
+4. Acceptance criteria exist
+Otherwise reply with NOT READY and one short paragraph explaining what is still missing.
+Do not be lenient.`;
+      const judgeUser = "PROBLEM:\n" + state.problem + "\n\nBOARD:\n" + boardSummary() + "\n\nRECENT:\n" +
+        state.messages.slice(-10).map(m => m.who + ": " + String(m.text).slice(0, 300)).join("\n");
+      const verdict = await callModel(judgeSys, judgeUser, { ms: 45000 });
+      if (/^\s*READY\b/i.test(verdict)) {
+        add("System", "Plan judged READY. Starting build…");
+        render();
+        await runBuild();
+        return;
+      } else {
+        add("System", "Judge: " + verdict.slice(0, 300));
+        render();
+      }
+    } catch (e) {
+      // If judge fails, still allow build after enough rounds
+      if (rounds >= (settings.planRounds || 6) + 2) {
+        add("System", "Judge unavailable — proceeding to build after sufficient rounds.");
+        render();
+        await runBuild();
+      }
+    }
+  } else if (rounds >= (settings.planRounds || 6)) {
+    add("System", "Local mode: enough rounds completed. Starting build…");
+    render();
+    await runBuild();
+  }
+}
+
+/* ── Build + Sandbox ── */
+function extractHtml(text) {
+  // Prefer fenced block
+  const fence = text.match(/```(?:html)?\s*([\s\S]*?)```/i);
+  if (fence) return fence[1].trim();
+  // Fallback: full document
+  const doc = text.match(/(<!DOCTYPE html>[\s\S]*<\/html>)/i);
+  if (doc) return doc[1].trim();
+  if (text.includes("<html") || text.includes("<!DOCTYPE")) return text.trim();
+  return null;
+}
+
+function runSandbox(code) {
+  return new Promise(resolve => {
+    const f = document.createElement("iframe");
+    f.setAttribute("sandbox", "allow-scripts");
+    f.style.cssText = "position:fixed;left:-9999px;width:320px;height:480px;border:0;opacity:0;pointer-events:none";
+    document.body.appendChild(f);
+
+    const results = { ok: false, errors: [], logs: [], blank: true, hasControls: false, version: 0 };
+
+    const finish = () => {
+      clearTimeout(timer);
+      try { document.body.removeChild(f); } catch (e) {}
+      resolve(results);
+    };
+
+    const timer = setTimeout(() => {
+      results.errors.push("Sandbox timeout (8s)");
+      finish();
+    }, 8000);
+
+    f.onload = () => {
+      try {
+        const doc = f.contentDocument;
+        if (!doc) {
+          results.errors.push("No document");
+          finish();
+          return;
+        }
+        // Capture errors
+        f.contentWindow.onerror = (msg) => {
+          results.errors.push(String(msg));
+        };
+        const origLog = f.contentWindow.console.log;
+        f.contentWindow.console.log = function () {
+          results.logs.push(Array.from(arguments).join(" "));
+          if (origLog) origLog.apply(console, arguments);
+        };
+        f.contentWindow.console.error = function () {
+          results.errors.push(Array.from(arguments).join(" "));
+        };
+
+        // Inject mock localStorage
+        try {
+          const store = {};
+          f.contentWindow.localStorage = {
+            getItem: k => store[k] || null,
+            setItem: (k, v) => { store[k] = String(v); },
+            removeItem: k => { delete store[k]; },
+            clear: () => { Object.keys(store).forEach(k => delete store[k]); }
+          };
+        } catch (e) {}
+
+        // Write code
+        doc.open();
+        doc.write(code);
+        doc.close();
+
+        setTimeout(() => {
+          try {
+            const body = doc.body;
+            const text = (body && body.innerText || "").trim();
+            results.blank = text.length < 8 && (!body || body.children.length < 1);
+            results.hasControls = !!(doc.querySelector("button, input, select, textarea, a[href], [onclick], [role=button]"));
+            results.ok = !results.blank && results.errors.length === 0;
+          } catch (e) {
+            results.errors.push("Eval error: " + e.message);
+          }
+          finish();
+        }, 1200);
+      } catch (e) {
+        results.errors.push(e.message || String(e));
+        finish();
+      }
+    };
+
+    // Trigger load with blank first so onload fires after write
+    f.src = "about:blank";
+  });
+}
+
+async function runBuild(changeReq) {
+  if (building) {
+    stopBuild = true;
+    return;
+  }
+  building = true;
+  stopBuild = false;
+  state.phase = "build";
+  updatePhaseChip();
+  syncControls();
+
+  const builder = state.members.find(m => m.on && m.role === "Builder") || state.members.find(m => m.on);
+  const skeptic = state.members.find(m => m.on && m.role === "Skeptic") || builder;
+  const maxIters = settings.buildIters || 6;
+  let attempt = 0;
+  let lastCode = state.buildHistory.length ? state.buildHistory[state.buildHistory.length - 1].code : null;
+  let lastFeedback = changeReq || "";
+
+  try {
+    while (attempt < maxIters && !stopBuild) {
+      attempt++;
+      setStatus("Build attempt " + attempt + "/" + maxIters + "…");
+
+      const system = [
+        ROLE_PROMPTS.Builder,
+        "",
+        "You are writing a COMPLETE, self-contained HTML file (single file preferred).",
+        "Requirements:",
+        "- Full <!DOCTYPE html> … </html>",
+        "- Mobile-first, works on iPhone Safari",
+        "- Dark theme by default using CSS variables",
+        "- No external network requests unless essential",
+        "- No placeholders, TODOs, or incomplete features",
+        "- Clean, readable code",
+        "",
+        "Return ONLY the HTML document (or a ```html fenced block). No preamble."
+      ].join("\n");
+
+      const userParts = [
+        "GOAL:\n" + state.problem,
+        "",
+        "AGREED PLAN / BOARD:\n" + (boardSummary() || "Use best judgement from the conversation."),
+        "",
+        state.research ? "RESEARCH HIGHLIGHTS:\n" + state.research.slice(0, 2000) : "",
+        "",
+        lastCode ? ("CURRENT CODE (version being improved):\n```html\n" + lastCode.slice(0, 12000) + "\n```") : "",
+        "",
+        lastFeedback ? ("CHANGE / FIX REQUEST:\n" + lastFeedback) : "Write the complete app from the plan.",
+        "",
+        "Output the full working HTML now."
+      ];
+
+      let raw;
+      if (isRemote()) {
+        try {
+          raw = await callModel(system, userParts.filter(Boolean).join("\n"), { ms: 120000 });
+        } catch (e) {
+          add("System", "Build model error: " + (e.message || e));
+          break;
+        }
+      } else {
+        // Local demo build — minimal placeholder
+        raw = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Demo</title>
+<style>body{font-family:system-ui;background:#0b0d17;color:#eef0ff;padding:24px}h1{color:#3dd9c5}</style></head>
+<body><h1>Local demo build</h1><p>Connect a real model (Groq / OpenRouter / etc.) in Settings to generate real apps.</p>
+<p>Problem was: ${esc(state.problem).slice(0, 200)}</p>
+<button onclick="alert('It works')">Test button</button></body></html>`;
+      }
+
+      const code = extractHtml(raw);
+      if (!code) {
+        add(builder.name, "Could not extract a complete HTML document. Retrying…\n\n" + raw.slice(0, 400));
+        lastFeedback = "Previous reply did not contain a complete HTML document. Return a full <!DOCTYPE html>…</html> file.";
+        render();
+        continue;
+      }
+
+      const version = (state.buildHistory.length || 0) + 1;
+      const entry = { version, code, ts: Date.now(), attempt };
+      state.buildHistory.push(entry);
+      if (state.buildHistory.length > 12) state.buildHistory = state.buildHistory.slice(-12);
+
+      add(builder.name, "Built version " + version + " (" + (code.length / 1024).toFixed(1) + " KB). Testing in sandbox…", {
+        role: "Builder",
+        kind: "deliverable",
+        code,
+        version
+      });
+      render();
+
+      // Sandbox test
+      setStatus("Testing v" + version + " in sandbox…");
+      state.phase = "testing";
+      updatePhaseChip();
+      const test = await runSandbox(code);
+      const problems = [];
+      if (test.blank) problems.push("App appears blank / empty");
+      if (!test.hasControls) problems.push("No interactive controls detected");
+      if (test.errors.length) problems.push("Runtime errors: " + test.errors.slice(0, 3).join("; "));
+
+      if (!problems.length) {
+        // Skeptic review
+        setStatus("Skeptic reviewing v" + version + "…");
+        let review = "APPROVED — sandbox passed (content present, controls found, no runtime errors).";
+        if (isRemote()) {
+          try {
+            const revSys = `You are the Skeptic reviewing a built web app.
+Look at the description of sandbox results and the code summary.
+Reply with exactly APPROVED if the app is good enough to ship for the stated goal.
+Otherwise reply with REJECTED and a short, concrete list of fixes required.
+Be strict about completeness and mobile usability.`;
+            const revUser = "GOAL: " + state.problem + "\n\nSandbox: blank=" + test.blank + ", hasControls=" + test.hasControls + ", errors=" + JSON.stringify(test.errors.slice(0, 5)) + "\n\nCode length: " + code.length + " chars\nFirst 1500 chars:\n" + code.slice(0, 1500);
+            review = await callModel(revSys, revUser, { ms: 45000 });
+          } catch (e) {
+            review = "APPROVED — sandbox passed (Skeptic model unavailable).";
+          }
+        }
+
+        if (/^\s*APPROVED/i.test(review) && !problems.length) {
+          add(skeptic.name, "Approved version " + version + ". " + review.replace(/^\s*APPROVED[:.\s-]*/i, "").slice(0, 250), {
+            role: "Skeptic"
+          });
+          state.phase = "done";
+          updatePhaseChip();
+          add("System", "✅ Build complete — version " + version + " approved.");
+          render();
+          break;
+        } else {
+          lastFeedback = review;
+          add(skeptic.name, "Rejected version " + version + ":\n" + review.slice(0, 500), { role: "Skeptic" });
+          render();
+        }
+      } else {
+        lastFeedback = "Sandbox failed:\n- " + problems.join("\n- ") + "\n\nFix these issues and return a complete corrected HTML file.";
+        add(skeptic.name, "Sandbox problems on v" + version + ":\n• " + problems.join("\n• "), { role: "Skeptic" });
+        render();
+      }
+
+      lastCode = code;
+    }
+
+    if (attempt >= maxIters && state.phase !== "done") {
+      add("System", "Reached max build attempts (" + maxIters + "). Latest version is available for preview/download. You can continue the conversation or Build again.");
+      state.phase = "converge";
+      render();
+    }
+  } finally {
+    building = false;
+    stopBuild = false;
+    setStatus("");
+    syncControls();
+    autosave();
+  }
+}
+
+function previewBuild(version) {
+  const entry = state.buildHistory.find(b => b.version === version) || state.buildHistory[state.buildHistory.length - 1];
+  if (!entry) return toast("No build found");
+  $("pvTitle").textContent = "Preview v" + entry.version;
+  const frame = $("pvFrame");
+  frame.srcdoc = entry.code;
+  openDialog("dPreview");
+}
+
+function downloadBuild(version) {
+  const entry = state.buildHistory.find(b => b.version === version) || state.buildHistory[state.buildHistory.length - 1];
+  if (!entry) return toast("No build found");
+  const blob = new Blob([entry.code], { type: "text/html" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "app-v" + entry.version + ".html";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast("Downloaded v" + entry.version);
+}
+
+/* ── User actions ── */
+function sendUser() {
+  const input = $("userInput");
+  const text = (input.value || "").trim();
+  if (!text || busy) return;
+  input.value = "";
+  input.style.height = "auto";
+
+  if (!state.problem) state.problem = text;
+  if (state.title === "Untitled") state.title = text.slice(0, 48);
+
+  const extra = {};
+  if (pendingImage) {
+    extra.image = pendingImage;
+  }
+  add("You", text, extra);
+  $("emptyState").classList.add("hidden");
+  render();
+
+  // Kick off
+  if (settings.buildMode) {
+    state.phase = "research";
+    updatePhaseChip();
+  }
+  runTurn();
+}
+
+function continueCouncil() {
+  if (busy || !state.problem) return;
+  runTurn();
+}
+
+/* ── Members UI ── */
+function renderMembers() {
+  const list = $("membersList");
+  list.innerHTML = "";
+  state.members.forEach((m, i) => {
+    const row = document.createElement("div");
+    row.className = "member-row";
+    const color = ROLE_COLORS[m.role] || "#888";
+    row.innerHTML = `
+      <span class="dot" style="background:${color}"></span>
+      <input type="checkbox" ${m.on ? "checked" : ""} data-i="${i}" class="m-on">
+      <input type="text" value="${esc(m.name)}" data-i="${i}" class="m-name">
+      <select data-i="${i}" class="m-role">
+        ${Object.keys(ROLE_PROMPTS).map(r => `<option value="${r}" ${m.role === r ? "selected" : ""}>${r}</option>`).join("")}
+      </select>
+      <button class="btn" data-del="${i}" title="Remove">✕</button>`;
+    list.appendChild(row);
+  });
+
+  list.querySelectorAll(".m-on").forEach(el => {
+    el.onchange = () => { state.members[+el.dataset.i].on = el.checked; autosave(); };
+  });
+  list.querySelectorAll(".m-name").forEach(el => {
+    el.onchange = () => { state.members[+el.dataset.i].name = el.value.trim() || "Member"; autosave(); };
+  });
+  list.querySelectorAll(".m-role").forEach(el => {
+    el.onchange = () => { state.members[+el.dataset.i].role = el.value; autosave(); renderMembers(); };
+  });
+  list.querySelectorAll("[data-del]").forEach(el => {
+    el.onclick = () => {
+      if (state.members.length <= 1) return toast("Need at least one member");
+      state.members.splice(+el.dataset.del, 1);
+      renderMembers();
+      autosave();
+    };
+  });
+}
+
+/* ── Projects UI ── */
+function renderProjects() {
+  const list = $("projectsList");
+  const projs = projects();
+  if (!projs.length) {
+    list.innerHTML = '<p class="hint">No saved projects yet.</p>';
+    return;
+  }
+  list.innerHTML = "";
+  projs.forEach(p => {
+    const row = document.createElement("div");
+    row.className = "proj-row";
+    const date = new Date(p.updated || p.created).toLocaleDateString();
+    row.innerHTML = `<div class="info"><b>${esc(p.title || "Untitled")}</b><small>${date} · ${p.messages?.length || 0} msgs</small></div>
+      <button class="btn" data-open="${p.id}">Open</button>
+      <button class="btn danger" data-delp="${p.id}">✕</button>`;
+    list.appendChild(row);
+  });
+  list.querySelectorAll("[data-open]").forEach(el => {
+    el.onclick = () => {
+      const p = projs.find(x => x.id === el.dataset.open);
+      if (!p) return;
+      if (state.messages.length && state.id !== p.id) saveProject(false);
+      state = Object.assign(defaultState(), JSON.parse(JSON.stringify(p)));
+      saveCurrent();
+      render();
+      closeDialog("dProjects");
+      toast("Opened");
+    };
+  });
+  list.querySelectorAll("[data-delp]").forEach(el => {
+    el.onclick = async () => {
+      if (!(await uiConfirm("Delete this project?"))) return;
+      writeProjects(projs.filter(x => x.id !== el.dataset.delp));
+      renderProjects();
+    };
+  });
+}
+
+/* ── Settings UI ── */
+const PROVIDERS = {
+  groq: {
+    url: "https://api.groq.com/openai/v1/chat/completions",
+    model: "llama-3.3-70b-versatile",
+    provider: "openai"
+  },
+  openrouter: {
+    url: "https://openrouter.ai/api/v1/chat/completions",
+    model: "meta-llama/llama-3.3-70b-instruct:free",
+    provider: "openai"
+  },
+  gemini: {
+    url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+    model: "gemini-2.0-flash",
+    provider: "gemini"
+  },
+  nvidia: {
+    url: "https://integrate.api.nvidia.com/v1/chat/completions",
+    model: "meta/llama-3.1-70b-instruct",
+    provider: "openai"
+  }
+};
+
+function fillSettingsForm() {
+  $("sEngine").value = settings.engine;
+  $("sUrl").value = settings.url || "";
+  $("sModel").value = settings.model || "";
+  $("sKey").value = settings.key || "";
+  $("sBuildMode").checked = !!settings.buildMode;
+  $("sWeb").checked = !!settings.webResearch;
+  $("sAutopilot").checked = !!settings.autopilot;
+  $("sPlanRounds").value = settings.planRounds || 6;
+  $("sBuildIters").value = settings.buildIters || 6;
+  $("sLight").checked = !!settings.light;
+  $("sAutosave").checked = !!settings.autosave;
+  $("customBlock").classList.toggle("hidden", settings.engine !== "custom");
+}
+
+function applySettingsFromForm() {
+  settings.engine = $("sEngine").value;
+  settings.url = $("sUrl").value.trim();
+  settings.model = $("sModel").value.trim();
+  settings.key = $("sKey").value.trim();
+  settings.buildMode = $("sBuildMode").checked;
+  settings.webResearch = $("sWeb").checked;
+  settings.autopilot = $("sAutopilot").checked;
+  settings.planRounds = Math.max(3, Math.min(12, +$("sPlanRounds").value || 6));
+  settings.buildIters = Math.max(1, Math.min(8, +$("sBuildIters").value || 6));
+  settings.light = $("sLight").checked;
+  settings.autosave = $("sAutosave").checked;
+  document.body.classList.toggle("light", settings.light);
+  saveSettings();
+  toast("Settings saved");
+}
+
+/* ── Camera ── */
+async function startCamera() {
+  try {
+    liveStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+    $("camVideo").srcObject = liveStream;
+    openDialog("dCamera");
+  } catch (e) {
+    toast("Camera unavailable: " + (e.message || e));
+  }
+}
+
+function stopCamera() {
+  if (liveStream) {
+    liveStream.getTracks().forEach(t => t.stop());
+    liveStream = null;
+  }
+  $("camVideo").srcObject = null;
+  closeDialog("dCamera");
+}
+
+function snapCamera() {
+  const video = $("camVideo");
+  const canvas = $("camCanvas");
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  canvas.getContext("2d").drawImage(video, 0, 0);
+  pendingImage = {
+    dataUrl: canvas.toDataURL("image/jpeg", 0.85),
+    mime: "image/jpeg",
+    w: canvas.width,
+    h: canvas.height
+  };
+  stopCamera();
+  toast("Frame captured — send a message to discuss it");
+}
+
+/* ── File / doc handling ── */
+function handleUpload(files) {
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = reader.result;
+      if (/\.(html|htm)$/i.test(file.name)) {
+        state.files.push({ name: file.name, text: String(text), ts: Date.now() });
+        // Also treat as a build candidate
+        const version = (state.buildHistory.length || 0) + 1;
+        state.buildHistory.push({ version, code: String(text), ts: Date.now(), attempt: 0 });
+        add("System", "Loaded " + file.name + " into workspace (v" + version + ").");
+      } else {
+        state.docs.push({ name: file.name, text: String(text).slice(0, 20000), ts: Date.now() });
+        add("System", "Added knowledge doc: " + file.name);
+      }
+      render();
+      autosave();
+    };
+    reader.readAsText(file);
+  });
+}
+
+/* ── Templates ── */
+const TEMPLATES = {
+  build: "Build a clean, mobile-first single-file web app that ",
+  research: "Research deeply and report findings on ",
+  improve: "Improve the AI Council app itself (self-improve). Current source is available — redesign for clarity, deeper reasoning, and better UX while keeping all core features.",
+  debug: "Debug and fix the following code / behaviour: "
+};
+
+/* ── Event wiring ── */
+function initEvents() {
+  // Send
+  $("sendBtn").onclick = sendUser;
+  $("userInput").addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendUser();
+    }
+  });
+  $("userInput").addEventListener("input", function () {
+    this.style.height = "auto";
+    this.style.height = Math.min(this.scrollHeight, 120) + "px";
+  });
+
+  // Toolbar
+  $("bBuild").onclick = () => {
+    if (building) { stopBuild = true; return; }
+    if (!state.problem) return toast("Describe a problem first");
+    runBuild();
+  };
+  $("bResearch").onclick = async () => {
+    if (!state.problem) return toast("Describe a topic first");
+    setStatus("Researching…");
+    await doResearch(state.problem);
+    add("System", "Research refreshed.");
+    render();
+    setStatus("");
+  };
+  $("bContinue").onclick = continueCouncil;
+  $("bUpload").onclick = () => {
+    const inp = document.createElement("input");
+    inp.type = "file";
+    inp.accept = ".txt,.md,.json,.csv,.html,.htm";
+    inp.multiple = true;
+    inp.onchange = () => handleUpload(inp.files);
+    inp.click();
+  };
+  $("bCamera").onclick = startCamera;
+  $("bFiles").onclick = () => {
+    const list = $("filesList");
+    if (!state.files.length && !state.buildHistory.length) {
+      list.innerHTML = '<p class="hint">No files yet.</p>';
+    } else {
+      list.innerHTML = state.buildHistory.map(b =>
+        `<div class="proj-row"><div class="info"><b>Build v${b.version}</b><small>${(b.code.length/1024).toFixed(1)} KB</small></div>
+         <button class="btn" data-pv="${b.version}">Preview</button>
+         <button class="btn" data-dlv="${b.version}">DL</button></div>`
+      ).join("");
+      list.querySelectorAll("[data-pv]").forEach(el => el.onclick = () => previewBuild(+el.dataset.pv));
+      list.querySelectorAll("[data-dlv]").forEach(el => el.onclick = () => downloadBuild(+el.dataset.dlv));
+    }
+    openDialog("dFiles");
+  };
+  $("bRefs").onclick = () => {
+    $("refsInput").value = state.refs || "";
+    openDialog("dRefs");
+  };
+  $("bDownload").onclick = () => {
+    if (state.buildHistory.length) downloadBuild(state.buildHistory[state.buildHistory.length - 1].version);
+  };
+
+  // Header
+  $("bSettings").onclick = () => { fillSettingsForm(); openDialog("dSettings"); };
+  $("bMembers").onclick = () => { renderMembers(); openDialog("dMembers"); };
+  $("bProjects").onclick = () => { renderProjects(); openDialog("dProjects"); };
+
+  // Settings
+  $("sEngine").onchange = () => {
+    $("customBlock").classList.toggle("hidden", $("sEngine").value !== "custom");
+  };
+  document.querySelectorAll(".pchip").forEach(btn => {
+    btn.onclick = () => {
+      const p = PROVIDERS[btn.dataset.p];
+      if (!p) return;
+      $("sUrl").value = p.url;
+      $("sModel").value = p.model;
+      settings.provider = p.provider;
+      document.querySelectorAll(".pchip").forEach(c => c.classList.remove("active"));
+      btn.classList.add("active");
+    };
+  });
+  $("bSaveSettings").onclick = () => {
+    applySettingsFromForm();
+    closeDialog("dSettings");
+  };
+  $("bTestKey").onclick = async () => {
+    applySettingsFromForm();
+    if (!settings.url) return toast("Enter an endpoint URL");
+    setStatus("Testing…");
+    try {
+      const t = await callModel("Reply with exactly: OK", "ping", { ms: 20000 });
+      toast("Connected ✔ " + t.slice(0, 40));
+    } catch (e) {
+      toast("Failed: " + (e.message || e).slice(0, 80));
+    }
+    setStatus("");
+  };
+
+  // Members
+  $("bAddMember").onclick = () => {
+    state.members.push({ name: "Member" + (state.members.length + 1), role: "Creative", on: true });
+    renderMembers();
+    autosave();
+  };
+
+  // Projects
+  $("bNewProject").onclick = async () => {
+    if (state.messages.length) {
+      const ok = await uiConfirm("Save current project and start new?");
+      if (!ok) return;
+      saveProject(false);
+    }
+    state = defaultState();
+    saveCurrent();
+    render();
+    closeDialog("dProjects");
+  };
+  $("bExport").onclick = () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = (state.title || "project").replace(/\W+/g, "-") + ".json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  // Refs
+  $("bSaveRefs").onclick = () => {
+    state.refs = $("refsInput").value.trim();
+    autosave();
+    closeDialog("dRefs");
+    toast("Notes saved");
+  };
+
+  // Camera
+  $("bCamStop").onclick = stopCamera;
+  $("bCamSnap").onclick = snapCamera;
+
+  // Templates
+  document.querySelectorAll("[data-tpl]").forEach(btn => {
+    btn.onclick = () => {
+      const t = TEMPLATES[btn.dataset.tpl] || "";
+      $("userInput").value = t;
+      $("userInput").focus();
+    };
+  });
+
+  // Generic close buttons
+  document.querySelectorAll("[data-close]").forEach(btn => {
+    btn.onclick = () => {
+      const dlg = btn.closest("dialog");
+      if (dlg) closeDialog(dlg);
+    };
+  });
+
+  // Close dialogs on backdrop click
+  document.querySelectorAll("dialog").forEach(d => {
+    d.addEventListener("click", e => {
+      if (e.target === d) closeDialog(d);
+    });
+  });
+}
+
+/* ── Boot ── */
+function boot() {
+  loadAll();
+  document.body.classList.toggle("light", settings.light);
+  initEvents();
+  render();
+  // Soft migrate title
+  if (state.problem && state.title === "Untitled") {
+    state.title = state.problem.slice(0, 48);
+  }
+}
+
+boot();
+})();
+</script>
+</body>
+</html>
