@@ -1,6 +1,6 @@
 /* AI Council offline app-shell cache. Bump CACHE_NAME when releasing updates. */
-const CACHE_NAME = "ai-council-shell-v5";
-const SHELL = ["./", "./index.html", "./app.js?v=3", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
+const CACHE_NAME = "ai-council-shell-v6";
+const SHELL = ["./", "./index.html", "./app.js?v=4", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
 });

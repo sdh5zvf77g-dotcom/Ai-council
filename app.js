@@ -441,6 +441,7 @@
     var m = (e && e.message) || String(e);
     if (/429|quota|rate.?limit|too many|busy/i.test(m)) return "The AI service is busy or its quota is used up (" + snip(m, 80) + ").";
     if (/401|403|unauthor|api key|permission/i.test(m)) return "The API key was rejected (" + snip(m, 80) + ").";
+    if (/unavailable for free|paid version/i.test(m)) return "That model is no longer free (" + snip(m, 60) + "). Tap Load available models, or use openrouter/free.";
     if (/404|not found/i.test(m)) return "The endpoint or model wasn't found (" + snip(m, 80) + ").";
     return snip(m, 150);
   }
@@ -562,7 +563,17 @@
   function callModel(system, user, o) {
     o = o || {};
     if (settings.engine === "free") return callFree(system, user, o);
-    return callCustom(system, user, o);
+    return callCustom(system, user, o).catch(function (e) {
+      var m = (e && e.message) || "";
+      if (/openrouter\.ai/.test(settings.url || "") && settings.model !== "openrouter/free" &&
+          /404|unavailable for free|No endpoints|not a valid model|paid version/i.test(m)) {
+        settings.model = "openrouter/free";
+        saveSettings();
+        toast("That model isn't free any more. Switched to openrouter/free.");
+        return callCustom(system, user, o);
+      }
+      throw e;
+    });
   }
 
   /* Ask the model; on any failure return {text:null} so the team keeps talking with built-in voices. */
@@ -1403,7 +1414,7 @@
 
   var PROVIDERS = {
     groq: { url: "https://api.groq.com/openai/v1/chat/completions", model: "llama-3.3-70b-versatile", provider: "openai" },
-    openrouter: { url: "https://openrouter.ai/api/v1/chat/completions", model: "meta-llama/llama-3.3-70b-instruct:free", provider: "openai" },
+    openrouter: { url: "https://openrouter.ai/api/v1/chat/completions", model: "openrouter/free", provider: "openai" },
     gemini: { url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", model: "gemini-2.0-flash", provider: "gemini" },
     nvidia: { url: "https://integrate.api.nvidia.com/v1/chat/completions", model: "meta/llama-3.1-70b-instruct", provider: "openai" }
   };
@@ -1441,6 +1452,34 @@
     toast("Settings saved");
   }
 
+  function loadModels() {
+    var url = $("sUrl").value.trim(), key = $("sKey").value.trim(), msg = $("modelsMsg");
+    if (!url) { msg.textContent = "Pick a provider preset or enter the endpoint URL first."; return; }
+    var base = url.replace(/\/chat\/completions\/?$/, "").replace(/\/+$/, "");
+    var isOR = /openrouter\.ai/.test(url), h = {};
+    if (key && !isOR) h["Authorization"] = "Bearer " + key;
+    msg.textContent = "Loading models…";
+    var ctl = new AbortController(), t = setTimeout(function () { ctl.abort(); }, 15000);
+    fetch(base + "/models", { headers: h, signal: ctl.signal }).then(function (r) {
+      clearTimeout(t);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    }).then(function (j) {
+      var list = (j.data || j.models || []).filter(function (m) {
+        if (!isOR) return true;
+        return m.pricing && +m.pricing.prompt === 0 && +m.pricing.completion === 0;
+      }).map(function (m) { return String(m.id || m.name || "").replace(/^models\//, ""); }).filter(Boolean);
+      if (isOR && list.indexOf("openrouter/free") < 0) list.unshift("openrouter/free");
+      list = list.slice(0, 80);
+      var dl = $("modelList"); dl.innerHTML = "";
+      list.forEach(function (id) { var o = document.createElement("option"); o.value = id; dl.appendChild(o); });
+      msg.textContent = list.length ? "✔ " + list.length + (isOR ? " free" : "") + " models loaded. Tap the Model box to choose one." : "No models returned.";
+    }).catch(function (e) {
+      clearTimeout(t);
+      msg.textContent = "✖ Could not load the list (" + ((e && e.message) || e) + "). You can still type a model name.";
+    });
+  }
+
   function testEngine() {
     applySettingsFromForm();
     var out = $("testResult");
@@ -1448,7 +1487,7 @@
     out.textContent = "Testing…";
     offlineNoticed = true;
     callModel("Reply with exactly: OK", "ping", { ms: 30000 })
-      .then(function (t) { out.textContent = "✔ Connected. The model replied: " + snip(t, 40); })
+      .then(function (t) { $("sModel").value = settings.model || ""; out.textContent = "✔ Connected (" + (settings.model || "free AI") + "). The model replied: " + snip(t, 40); })
       .catch(function (e) { out.textContent = "✖ " + friendlyErr(e) + " The team will still work with its built-in voices."; })
       .then(function () { offlineNoticed = false; });
   }
@@ -1598,6 +1637,7 @@
       closeDialog("dSettings");
     };
     $("bTestKey").onclick = testEngine;
+    $("bLoadModels").onclick = loadModels;
     $("bTestFree").onclick = testEngine;
 
     $("bAddMember").onclick = function () {

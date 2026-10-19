@@ -156,7 +156,8 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 <button type="button" class="pchip" data-p="nvidia">NVIDIA</button>
 </div>
 <label for="sUrl">Endpoint URL</label><input type="text" id="sUrl" placeholder="https://api.openai.com/v1/chat/completions" autocomplete="off" autocapitalize="off">
-<label for="sModel">Model</label><input type="text" id="sModel" placeholder="llama-3.3-70b-versatile" autocomplete="off">
+<label for="sModel">Model</label><input type="text" id="sModel" list="modelList" placeholder="llama-3.3-70b-versatile" autocomplete="off" autocapitalize="off"><datalist id="modelList"></datalist>
+<button type="button" class="btn" id="bLoadModels" style="margin-top:6px">Load available models</button><p class="hint" id="modelsMsg"></p>
 <label for="sKey">API Key</label><input type="password" id="sKey" placeholder="sk-..." autocomplete="off">
 <p class="hint">Free-tier availability and limits vary. API keys are stored in this browser on this device; do not use a shared device. Some providers block browser requests (CORS); a small server-side proxy may be required.</p>
 <button type="button" class="btn" id="bTestKey" style="margin-top:8px">Test connection</button>
@@ -166,6 +167,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 <div class="chk"><input type="checkbox" id="sWeb" checked><label for="sWeb">Web research</label></div>
 <div class="chk"><input type="checkbox" id="sPerMember"><label for="sPerMember">One AI call per member (slower, more varied)</label></div>
 <div class="chk"><input type="checkbox" id="sAutoBuild"><label for="sAutoBuild">Build automatically when the plan is agreed</label></div>
+<p class="hint">Free models allow roughly 200 requests a day. Leave "One AI call per member" off and keep plan rounds at 3 to save them.</p>
 <label for="sPlanRounds">Minimum plan rounds (2-8)</label><input type="number" id="sPlanRounds" min="2" max="8" value="3">
 <label for="sBuildIters">Max build attempts (1-8)</label><input type="number" id="sBuildIters" min="1" max="8" value="4">
 <div class="chk"><input type="checkbox" id="sAutosave" checked><label for="sAutosave">Autosave</label></div>
@@ -189,7 +191,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 <div class="dfoot"><button type="button" class="btn" id="promptNo">Cancel</button><button type="button" class="btn primary" id="promptYes">OK</button></div></div></dialog>
 <dialog id="dPreview"><div class="pvbar"><strong id="pvTitle">Preview</strong><button type="button" class="btn" data-close>Close</button></div>
 <iframe id="pvFrame" sandbox="allow-scripts allow-forms allow-modals allow-popups" title="preview"></iframe></dialog>
-<script src="app.js?v=3"></script>
+<script src="app.js?v=4"></script>
 <script>
 if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
   window.addEventListener("load", function () {
