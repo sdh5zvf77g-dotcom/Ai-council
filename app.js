@@ -666,7 +666,58 @@
     if (/\btip\b|split|\bbill\b/.test(p)) return "tip";
     if (/note|journal|diary|memo|jot/.test(p)) return "notes";
     if (/budget|expense|spend|habit|track|\blog\b|workout|water|mood|money|financ/.test(p)) return "tracker";
-    return "tasks";
+    if (/\b(to-?do|task|checklist|list|reminder|shopping|chores?)\b/.test(p)) return "tasks";
+    return null;
+  }
+  function tplFeatures() { var t = pickTemplate(); return t ? TPL_FEATURES[t] : ["the features you described"]; }
+
+  /* ---- improving an existing app: inspect the real code instead of inventing a new one ---- */
+  function improveFiles() {
+    var out = [];
+    (state.files || []).forEach(function (f) { if (/\.(html?|js)$/i.test(f.name)) out.push({ name: f.name, code: f.text || "" }); });
+    if (!out.length && state.buildHistory.length) out.push({ name: "current build", code: state.buildHistory[state.buildHistory.length - 1].code });
+    return out;
+  }
+  function isImprove() {
+    var p = state.problem || "";
+    if ((state.files || []).some(function (x) { return /\.html?$/i.test(x.name); })) return true;
+    return /\b(improve|fix|debug|harden|upgrade|refactor|redesign|audit)\b/i.test(p) && /\b(app|code|page|site|this|itself|uploaded|file)\b/i.test(p);
+  }
+  function inspectCode(name, c, anyStorage) {
+    var out = [], isHtml = /\.html?$/i.test(name) || (!/\.\w+$/.test(name) && /<html|<!doctype/i.test(c));
+    if (isHtml && !/<meta[^>]+viewport/i.test(c)) out.push("No viewport meta tag, so the page will not scale properly on iPhone.");
+    var nat = (c.match(/(^|[^\w.$])(alert|prompt|confirm)\s*\(/g) || []).length;
+    if (nat) out.push(nat + " use(s) of alert/prompt/confirm. Replace them with in-page dialogs.");
+    if (isHtml && /\bsrc\s*=\s*["']https?:/i.test(c)) out.push("Loads external scripts or images, so it will not work offline.");
+    if (!anyStorage) out.push("Nothing is saved on the device (no localStorage).");
+    var todo = (c.match(/(?:\/\/|\/\*)\s*(?:TODO|FIXME)\b/g) || []).length;
+    if (todo) out.push(todo + " TODO/FIXME comment(s) left in the code.");
+    if (isHtml && !/aria-label|<label/i.test(c)) out.push("No labels or aria-labels, so screen readers cannot describe the controls.");
+    if (c.length > 80000) out.push("Very large file (" + (c.length / 1024).toFixed(0) + " KB). Consider splitting it into modules.");
+    if (isHtml) staticCheck(c).forEach(function (x) { out.push(x); });
+    else { try { new Function(c); } catch (e) { out.push("JavaScript syntax error: " + e.message); } }
+    return out;
+  }
+  function inspectReport() {
+    var fs = improveFiles();
+    if (!fs.length) return "";
+    var anyStorage = fs.some(function (f) { return /localStorage/.test(f.code); });
+    return fs.slice(0, 4).map(function (f) {
+      var r = inspectCode(f.name, f.code, anyStorage);
+      return f.name + " (" + (f.code.length / 1024).toFixed(1) + " KB): " + (r.length ? "\n- " + r.join("\n- ") : "no obvious problems found by the automatic checks.");
+    }).join("\n");
+  }
+  function loadSelfSource() {
+    var names = ["index.html", "app.js"];
+    return Promise.all(names.map(function (n) {
+      return timedFetch(n + "?t=" + Date.now(), 10000).then(function (r) { return r.ok ? r.text() : null; }).catch(function () { return null; });
+    })).then(function (texts) {
+      var n = 0;
+      texts.forEach(function (t, i) { if (t) { state.files.push({ name: names[i], text: t, ts: Date.now() }); n++; } });
+      add("System", n ? "📂 Loaded this app's own files (" + names.filter(function (x, i) { return texts[i]; }).join(", ") + ") so the team can inspect the real code."
+                      : "I could not read this app's own files from here. Tap Upload and choose index.html and app.js.");
+      render();
+    });
   }
   var TPL_FEATURES = {
     tasks: ["Add an item with the keyboard or the Add button", "Tick items off and see how many are done", "Delete an item or clear everything that is done", "Everything is saved on the device and survives a reload"],
@@ -702,7 +753,7 @@
     var mine = cm.filter(function (x) { return x.who === m.name && x.stage === stage; }).length;
     var set = LOCAL_CLAIMS[stage] || LOCAL_CLAIMS.research;
     var pool = set[m.role] || set.Strategist;
-    var claim = pool[mine % pool.length].replace(/\{t\}/g, topic()).replace(/\{features\}/g, TPL_FEATURES[pickTemplate()].slice(0, 3).join("; ").toLowerCase());
+    var claim = pool[mine % pool.length].replace(/\{t\}/g, topic()).replace(/\{features\}/g, tplFeatures().slice(0, 3).join("; ").toLowerCase());
     var target = null;
     for (var i = cm.length - 1; i >= 0 && !target; i--) {
       if (cm[i].who !== m.name && cm[i].stage === stage) target = cm[i];
@@ -747,6 +798,17 @@
       var pts = b.points.slice(-5).map(function (p) { return "• " + p.text + " (" + p.by + ")"; });
       return "What we learned about " + topic() + ":\n" + (pts.join("\n") || "• Keep the scope small") +
         "\nConstraints: one HTML file, iPhone Safari, data saved on the device with localStorage, no server.\nDecision: build a small, focused first version.";
+    }
+    if (isImprove()) {
+      var rep = inspectReport();
+      return "Goal: improve the existing app.\n" +
+        (rep ? "Findings from automatic inspection:\n" + rep + "\n" : "No code has been loaded yet. Tap Upload and choose the app's files so the team can inspect the real code.\n") +
+        "Plan: fix the findings in order, keep every existing feature working, and re-test after each change.\n" +
+        "Note: the built-in team can inspect code but cannot rewrite it. Choose Free AI or add your key in Settings to apply the changes.";
+    }
+    if (!pickTemplate()) {
+      return "Goal: " + snip(state.problem, 120) + "\nThe built-in team only knows five starter apps (task list, tracker, timer, tip calculator, notes), and this idea is not one of them.\n" +
+        "To get a real plan and build for it, choose Free AI or add your key in Settings, then tap Continue.";
     }
     var f = TPL_FEATURES[pickTemplate()];
     return "App name: " + appTitle() + "\nFeatures:\n" + f.map(function (x, i) { return (i + 1) + ". " + x; }).join("\n") +
@@ -880,6 +942,7 @@
     if (state.research && !/^No useful/.test(state.research)) parts.push("WEB RESEARCH NOTES:\n" + state.research.slice(0, 2500));
     if (stage === "plan" && state.researchSummary) parts.push("AGREED RESEARCH SUMMARY:\n" + state.researchSummary);
     var cd = codeDigest(); if (cd) parts.push(cd);
+    var ir = isImprove() ? inspectReport() : ""; if (ir) parts.push("AUTOMATIC INSPECTION FINDINGS (real, from the code):\n" + ir);
     var bs = boardSummary(); if (bs) parts.push("TEAM BOARD:\n" + bs);
     var po = pendingObjections(stage); if (po) parts.push("OPEN OBJECTIONS FROM THE LAST VOTE (address them):\n" + po);
     parts.push("MEETING SO FAR:\n" + transcriptText(14));
@@ -1162,6 +1225,10 @@
     if (building) return;
     if (running) { toast("Wait for the team to finish, or tap Stop."); return; }
     if (state.stage !== "ready" && state.stage !== "done") { toast("The team has to agree on the plan first."); return; }
+    if (isImprove() && !state.buildHistory.length && (state.files || []).length) {
+      add("System", "ℹ Build writes a single HTML file, but this app has several files. The agreed plan above is your change list. To let the Builder edit one file, upload just that single HTML file.");
+      render(); return;
+    }
     runBuild("");
   }
 
@@ -1184,6 +1251,8 @@
 
     function writeCode() {
       if (!isRemote()) {
+        if (isImprove()) return Promise.resolve({ blocked: "The built-in team can inspect code but cannot rewrite it. The agreed plan above is your change list. Choose Free AI or add your key in Settings to have the Builder apply it." });
+        if (!pickTemplate()) return Promise.resolve({ blocked: "The built-in builder only makes five starter apps and this idea is not one of them. Choose Free AI or add your key in Settings, then tap Build again." });
         if (feedback && last) add("System", "The built-in builder makes starter apps from templates and can't apply custom changes. Connect an AI model for that.");
         return Promise.resolve({ code: offlineApp(), via: "offline" });
       }
@@ -1195,7 +1264,7 @@
         (feedback ? "\n\nFIX / CHANGE REQUEST:\n" + feedback : (last ? "\n\nImprove it where the plan is not fully met." : "\n\nWrite the complete app.")) +
         (edit ? "\n\nReturn ONLY SEARCH/REPLACE edit blocks." : "\n\nReturn the COMPLETE HTML file.");
       return askModel(edit ? EDIT_SYS : BUILDER_SYS, user, { ms: 180000, max: edit ? 8000 : 16000, gap: 1500 }).then(function (r) {
-        if (r.text == null) return last ? { failed: true } : { code: offlineApp(), via: "offline", failedModel: true };
+        if (r.text == null) return last ? { failed: true } : (pickTemplate() && !isImprove() ? { code: offlineApp(), via: "offline", failedModel: true } : { blocked: "The AI service isn't answering, and the built-in builder can't make this one. Try again in a minute." });
         var edits = edit ? parseEdits(r.text) : [];
         if (edits.length) {
           var res = applyEdits(last, edits);
@@ -1239,6 +1308,7 @@
       return writeCode().then(function (res) {
         typing = null;
         if (res.retry) { feedback = res.retry; add(builder.name, "My edit didn't apply cleanly, retrying with exact text…", { role: "Builder" }); render(); return attemptOnce(); }
+        if (res.blocked) return finish("ℹ " + res.blocked, false);
         if (res.failed) return finish("⚠ The AI service isn't answering, so the app couldn't be changed this time. Try again in a minute.", false);
         var code = res.code;
         state.buildHistory.push({ version: v, code: code, ts: Date.now(), attempt: attempt, via: res.via });
@@ -1316,7 +1386,13 @@
     add("You", text, extra);
     render();
     if (running) { toast("Added. The team will read it on their next turn."); return; }
-    if (first) { startTeam(); return; }
+    if (first) {
+      if (/\b(ai council|this app|the app itself|itself)\b/i.test(text) && !(state.files || []).length) {
+        busy = true; syncControls(); setStatus("Loading this app's own code…");
+        loadSelfSource().then(function () { busy = false; setStatus(""); startTeam(); });
+      } else startTeam();
+      return;
+    }
     if (state.stage === "ready") {
       state.stage = "plan"; state.rounds.plan = 0; state.votes = {};
       add("System", "Your note reopens the plan. The team will talk it through again.");

@@ -26,3 +26,8 @@ Messages from built-in voices are tagged "offline voice". Offline builds are tem
 - The build test could never pass (sandbox was unreadable), so every build was rejected.
 - Free AI put the whole prompt in the URL and failed; now uses POST, retries, then falls back.
 - Team spoke one member per tap with no agreement gates; Build was available from the start.
+
+## Improving an existing app
+- Say "Improve this app" (or upload files): the team loads/inspects the REAL code and plans from automatic findings.
+- Built-in (offline) team can inspect but not rewrite code. With Free AI or your key, upload ONE html file and the Builder edits it with search/replace blocks.
+- The built-in team no longer invents a to-do list for ideas it cannot build; it says so and asks you to connect an AI.
