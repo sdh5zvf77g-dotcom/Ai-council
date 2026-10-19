@@ -19,7 +19,8 @@ header{flex:none;display:flex;align-items:center;gap:8px;padding:10px 12px;paddi
 .logo{font-weight:700;font-size:1.05rem}.logo span{color:#3dd9c5}
 #phaseChip{font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:999px;background:#1e2340;color:#3dd9c5;border:1px solid #2a3055}
 .hdr-actions{margin-left:auto;display:flex;gap:4px}
-.icon-btn{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:#8b92b8;font-size:1.1rem}
+.icon-btn{width:44px;height:44px;min-width:44px;min-height:44px;border-radius:12px;display:grid;place-items:center;color:#8b92b8;font-size:1.15rem;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.icon-btn:active{background:#1e2340}
 #statusBar{flex:none;display:none;align-items:center;gap:8px;padding:6px 14px;font-size:.8rem;color:#8b92b8;background:#11142a;border-bottom:1px solid #2a3055}
 #statusBar.show{display:flex}
 .spin{width:12px;height:12px;border:2px solid #2a3055;border-top-color:#7c8cff;border-radius:50%;animation:spin .7s linear infinite}
@@ -44,7 +45,7 @@ main{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch
 .deliv .actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 footer{flex:none;padding:8px 10px calc(10px + env(safe-area-inset-bottom,0px));background:#11142a;border-top:1px solid #2a3055;display:flex;flex-direction:column;gap:6px;z-index:20}
 .toolbar{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-.tbtn{flex:none;display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:8px;background:#161a32;border:1px solid #2a3055;font-size:.8rem;color:#8b92b8;white-space:nowrap}
+.tbtn{flex:none;display:flex;align-items:center;gap:4px;padding:8px 12px;min-height:44px;border-radius:10px;background:#161a32;border:1px solid #2a3055;font-size:.8rem;color:#8b92b8;white-space:nowrap;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .tbtn.primary{background:#7c8cff;color:#fff;border-color:transparent;font-weight:600}
 .input-row{display:flex;gap:8px;align-items:flex-end;width:100%;min-width:0}.input-row textarea{min-width:0}
 #userInput{flex:1;min-height:42px;max-height:120px;resize:none;background:#161a32;border:1px solid #2a3055;border-radius:12px;padding:10px 12px;color:#eef0ff;line-height:1.4}
@@ -71,6 +72,17 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 .proj-row .info{flex:1;min-width:0}
 .proj-row .info b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .proj-row .info small{color:#8b92b8}
+.proj-row .btn{min-height:44px;min-width:44px;padding:8px 12px}
+.proj-empty{text-align:center;padding:28px 16px;color:#8b92b8}
+.proj-empty .illus{font-size:2.8rem;line-height:1;margin-bottom:10px;opacity:.9}
+.proj-empty h3{color:#eef0ff;font-size:1.1rem;margin-bottom:6px}
+.proj-empty p{font-size:.88rem;margin-bottom:16px}
+.proj-form{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;padding:12px;background:#1e2340;border:1px solid #2a3055;border-radius:12px}
+.proj-form .err{color:#f87171;font-size:.82rem;min-height:1.2em}
+.proj-form .row{display:flex;gap:8px;align-items:center}
+.proj-form input[type=text]{flex:1;min-width:0;background:#0b0d17;border:1px solid #2a3055;border-radius:10px;padding:10px 12px;font-size:16px;color:#eef0ff;min-height:44px}
+.proj-form .btn{min-height:44px}
+.btn{min-height:44px}
 .provider-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
 .pchip{padding:8px;border-radius:10px;border:1px solid #2a3055;background:#1e2340;text-align:center;font-size:.82rem;font-weight:600;color:#eef0ff}
 .pchip.active{border-color:#7c8cff;background:#7c8cff;color:#fff}
@@ -171,12 +183,32 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 <label for="sPlanRounds">Minimum plan rounds (2-8)</label><input type="number" id="sPlanRounds" min="2" max="8" value="3">
 <label for="sBuildIters">Max build attempts (1-8)</label><input type="number" id="sBuildIters" min="1" max="8" value="4">
 <div class="chk"><input type="checkbox" id="sAutosave" checked><label for="sAutosave">Autosave</label></div>
+<label>Appearance</label>
+<div class="chk"><input type="checkbox" id="sDarkTheme" checked><label for="sDarkTheme">Dark theme</label></div>
+<label for="sFontSize">Base font size</label>
+<select id="sFontSize"><option value="15">15 px</option><option value="16" selected>16 px</option><option value="17">17 px</option><option value="18">18 px</option></select>
+<p class="hint">16 px is the recommended minimum for readable form fields on iPhone.</p>
+<label>Permissions (HTTPS required)</label>
+<div class="chk"><input type="checkbox" id="sPermCamera"><label for="sPermCamera">Allow camera access when used</label></div>
+<div class="chk"><input type="checkbox" id="sPermStorage" checked><label for="sPermStorage">Allow local storage (projects &amp; settings)</label></div>
+<p class="hint">Camera and storage only work on a secure origin (https:// or localhost). Granting is remembered in this browser.</p>
 <div class="dfoot"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" id="bSaveSettings">Save</button></div>
 </div></dialog>
 <dialog id="dMembers"><div class="dlg"><h2>Council members</h2><div id="membersList"></div>
 <div class="dfoot"><button type="button" class="btn" id="bAddMember">+ Add</button><button type="button" class="btn primary" data-close>Done</button></div></div></dialog>
-<dialog id="dProjects"><div class="dlg"><h2>Projects</h2><div id="projectsList"></div>
-<div class="dfoot"><button type="button" class="btn" id="bNewProject">+ New</button><button type="button" class="btn" id="bExport">Export</button><button type="button" class="btn primary" data-close>Done</button></div></div></dialog>
+<dialog id="dProjects"><div class="dlg"><h2>Projects</h2>
+<div class="proj-form" id="projForm">
+  <label for="projTitle" style="margin:0;font-weight:600;font-size:.88rem">Title</label>
+  <div class="row">
+    <input type="text" id="projTitle" maxlength="200" placeholder="Project or topic name" autocomplete="off" enterkeyhint="done">
+    <button type="button" class="btn primary" id="bSaveProjTitle">Save</button>
+  </div>
+  <div class="err" id="projErr" aria-live="polite"></div>
+  <p class="hint">Max 200 characters. Empty and duplicate titles are blocked.</p>
+</div>
+<div id="projectsList"></div>
+<div class="dfoot"><button type="button" class="btn" id="bNewProject">+ New</button><button type="button" class="btn" id="bExport">Export</button><button type="button" class="btn primary" data-close>Done</button></div>
+</div></dialog>
 <dialog id="dRefs"><div class="dlg"><h2>Reference notes</h2><textarea id="refsInput" placeholder="Constraints, APIs..."></textarea>
 <div class="dfoot"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" id="bSaveRefs">Save</button></div></div></dialog>
 <dialog id="dFiles"><div class="dlg"><h2>Workspace files</h2><div id="filesList"></div>
@@ -191,7 +223,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 <div class="dfoot"><button type="button" class="btn" id="promptNo">Cancel</button><button type="button" class="btn primary" id="promptYes">OK</button></div></div></dialog>
 <dialog id="dPreview"><div class="pvbar"><strong id="pvTitle">Preview</strong><button type="button" class="btn" data-close>Close</button></div>
 <iframe id="pvFrame" sandbox="allow-scripts allow-forms allow-modals allow-popups" title="preview"></iframe></dialog>
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 <script>
 if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
   window.addEventListener("load", function () {

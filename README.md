@@ -1,5 +1,14 @@
 # AI Council v3 (staged team)
 
+## What’s new (end-to-end UX)
+- Header navigation buttons are true 44×44 px tap targets.
+- Projects dialog is a full list view with Add / Edit / Delete controls.
+- Title form validates empty input, blocks duplicates, enforces a 200-character limit, and ignores rapid taps.
+- Friendly empty state (illustration + Start) when no projects exist.
+- Settings overlay: dark theme, base font size (default 16 px), camera & storage permission toggles (HTTPS required).
+- All data uses localStorage inside try/catch; list and settings restore after reload.
+- Error banner remains tappable to dismiss.
+
 ## Upload to GitHub Pages
 Upload ALL files to the ROOT of your repo (not the zip itself, not inside a folder):
 index.html, app.js, sw.js, manifest.webmanifest, apple-touch-icon.png, icon-192.png, icon-512.png.
