@@ -98,10 +98,6 @@
       perMember: false,
       autoBuild: false,
       autosave: true,
-      darkTheme: true,
-      fontSize: 16,
-      permCamera: false,
-      permStorage: true,
       showContinue: true
     };
   }
@@ -120,7 +116,6 @@
     try { return localStorage.getItem(k); } catch (e) { return null; }
   }
   function sSet(k, v) {
-    if (settings && settings.permStorage === false) return false;
     try { localStorage.setItem(k, v); return true; } catch (e) { return false; }
   }
 
@@ -1451,126 +1446,28 @@
     });
   }
 
-  var projTapGuard = 0;
-  var projEditingId = null;
-
-  function setProjErr(msg) {
-    var el = $("projErr");
-    if (el) el.textContent = msg || "";
-  }
-
-  function resetProjForm() {
-    projEditingId = null;
-    var inp = $("projTitle");
-    if (inp) {
-      inp.value = state.title && state.title !== "Untitled" ? state.title : "";
-      inp.placeholder = "Project or topic name";
-    }
-    setProjErr("");
-    var btn = $("bSaveProjTitle");
-    if (btn) btn.textContent = "Save";
-  }
-
-  function validateProjTitle(title, excludeId) {
-    var t = String(title || "").trim();
-    if (!t) return "Title cannot be empty.";
-    if (t.length > 200) return "Title must be 200 characters or fewer.";
-    var list = projects();
-    var lower = t.toLowerCase();
-    for (var i = 0; i < list.length; i++) {
-      if (excludeId && list[i].id === excludeId) continue;
-      if (String(list[i].title || "").trim().toLowerCase() === lower) {
-        return "A project with this title already exists.";
-      }
-    }
-    return null;
-  }
-
-  function saveProjTitleFromForm() {
-    var now = Date.now();
-    if (now - projTapGuard < 600) {
-      setProjErr("Please wait a moment…");
-      return;
-    }
-    projTapGuard = now;
-    var inp = $("projTitle");
-    if (!inp) return;
-    var title = inp.value;
-    var err = validateProjTitle(title, projEditingId || state.id);
-    if (err) {
-      setProjErr(err);
-      inp.focus();
-      return;
-    }
-    setProjErr("");
-    var clean = String(title).trim().slice(0, 200);
-    if (projEditingId) {
-      var list = projects();
-      var idx = list.findIndex(function (p) { return p.id === projEditingId; });
-      if (idx >= 0) {
-        list[idx].title = clean;
-        list[idx].updated = Date.now();
-        writeProjects(list);
-        if (state.id === projEditingId) {
-          state.title = clean;
-          saveCurrent();
-        }
-        toast("Title updated");
-      }
-      projEditingId = null;
-      if ($("bSaveProjTitle")) $("bSaveProjTitle").textContent = "Save";
-    } else {
-      state.title = clean;
-      saveProject(true);
-      toast("Project saved as “" + clean + "”");
-    }
-    inp.value = clean;
-    renderProjects();
-  }
-
   function renderProjects() {
     var list = $("projectsList");
-    if (!list) return;
     var projs = projects();
-    list.innerHTML = "";
     if (!projs.length) {
-      var empty = document.createElement("div");
-      empty.className = "proj-empty";
-      empty.innerHTML =
-        '<div class="illus" aria-hidden="true">📁</div>' +
-        "<h3>No projects yet</h3>" +
-        "<p>Save your first research or app idea. Titles are limited to 200 characters and must be unique.</p>" +
-        '<button type="button" class="btn primary" id="bStartProj" style="min-height:44px">Start</button>';
-      list.appendChild(empty);
-      var start = $("bStartProj");
-      if (start) {
-        start.onclick = function () {
-          var inp = $("projTitle");
-          if (inp) {
-            inp.focus();
-            if (!inp.value.trim()) inp.value = "My first project";
-          }
-        };
-      }
+      list.innerHTML = '<p class="hint">No saved projects yet.</p>';
       return;
     }
+    list.innerHTML = "";
     projs.forEach(function (p) {
       var row = document.createElement("div");
       row.className = "proj-row";
       var date = new Date(p.updated || p.created).toLocaleDateString();
-      var isCurrent = p.id === state.id;
       row.innerHTML =
-        '<div class="info"><b>' + esc(p.title || "Untitled") + (isCurrent ? " · current" : "") +
-        "</b><small>" + date + " · " + ((p.messages && p.messages.length) || 0) + " msgs</small></div>" +
-        '<button type="button" class="btn" data-edit="' + p.id + '" title="Edit title">Edit</button>' +
+        '<div class="info"><b>' + esc(p.title || "Untitled") + "</b><small>" + date +
+        " · " + ((p.messages && p.messages.length) || 0) + " msgs</small></div>" +
         '<button type="button" class="btn" data-open="' + p.id + '">Open</button>' +
-        '<button type="button" class="btn danger" data-delp="' + p.id + '" title="Delete">Del</button>';
+        '<button type="button" class="btn danger" data-delp="' + p.id + '">X</button>';
       list.appendChild(row);
     });
     list.querySelectorAll("[data-open]").forEach(function (el) {
       el.onclick = function () {
-        var id = el.getAttribute("data-open");
-        var p = projs.find(function (x) { return x.id === id; });
+        var p = projs.find(function (x) { return x.id === el.getAttribute("data-open"); });
         if (!p) return;
         if (state.messages.length && state.id !== p.id) saveProject(false);
         state = Object.assign(defaultState(), JSON.parse(JSON.stringify(p)));
@@ -1580,35 +1477,12 @@
         toast("Opened");
       };
     });
-    list.querySelectorAll("[data-edit]").forEach(function (el) {
-      el.onclick = function () {
-        var id = el.getAttribute("data-edit");
-        var p = projs.find(function (x) { return x.id === id; });
-        if (!p) return;
-        projEditingId = id;
-        var inp = $("projTitle");
-        if (inp) {
-          inp.value = p.title || "";
-          inp.focus();
-          inp.select();
-        }
-        if ($("bSaveProjTitle")) $("bSaveProjTitle").textContent = "Update";
-        setProjErr("");
-      };
-    });
     list.querySelectorAll("[data-delp]").forEach(function (el) {
       el.onclick = function () {
-        var id = el.getAttribute("data-delp");
-        uiConfirm("Delete this project? This cannot be undone.").then(function (ok) {
+        uiConfirm("Delete this project?").then(function (ok) {
           if (!ok) return;
-          writeProjects(projs.filter(function (x) { return x.id !== id; }));
-          if (state.id === id) {
-            state = defaultState();
-            saveCurrent();
-            render();
-          }
+          writeProjects(projs.filter(function (x) { return x.id !== el.getAttribute("data-delp"); }));
           renderProjects();
-          toast("Deleted");
         });
       };
     });
@@ -1620,21 +1494,6 @@
     gemini: { url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", model: "gemini-2.0-flash", provider: "gemini" },
     nvidia: { url: "https://integrate.api.nvidia.com/v1/chat/completions", model: "meta/llama-3.1-70b-instruct", provider: "openai" }
   };
-
-  function applyAppearance() {
-    var root = document.documentElement;
-    var dark = settings.darkTheme !== false;
-    root.style.setProperty("--bg", dark ? "#0b0d17" : "#f4f5fb");
-    root.style.setProperty("--panel", dark ? "#161a32" : "#ffffff");
-    root.style.setProperty("--line", dark ? "#2a3055" : "#d0d5ee");
-    root.style.setProperty("--tx", dark ? "#eef0ff" : "#12152a");
-    root.style.setProperty("--mut", dark ? "#8b92b8" : "#5a6288");
-    document.body.style.background = dark ? "#0b0d17" : "#f4f5fb";
-    document.body.style.color = dark ? "#eef0ff" : "#12152a";
-    document.body.style.fontSize = (settings.fontSize || 16) + "px";
-    var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", dark ? "#0b0d17" : "#f4f5fb");
-  }
 
   function fillSettingsForm() {
     $("sEngine").value = settings.engine;
@@ -1648,10 +1507,6 @@
     $("sPlanRounds").value = settings.planRounds || 3;
     $("sBuildIters").value = settings.buildIters || 4;
     $("sAutosave").checked = !!settings.autosave;
-    if ($("sDarkTheme")) $("sDarkTheme").checked = settings.darkTheme !== false;
-    if ($("sFontSize")) $("sFontSize").value = String(settings.fontSize || 16);
-    if ($("sPermCamera")) $("sPermCamera").checked = !!settings.permCamera;
-    if ($("sPermStorage")) $("sPermStorage").checked = settings.permStorage !== false;
     $("customBlock").classList.toggle("hidden", settings.engine !== "custom");
     $("freeBlock").classList.toggle("hidden", settings.engine !== "free");
     $("testResult").textContent = "";
@@ -1669,12 +1524,7 @@
     settings.planRounds = Math.max(2, Math.min(8, +$("sPlanRounds").value || 3));
     settings.buildIters = Math.max(1, Math.min(8, +$("sBuildIters").value || 4));
     settings.autosave = $("sAutosave").checked;
-    if ($("sDarkTheme")) settings.darkTheme = $("sDarkTheme").checked;
-    if ($("sFontSize")) settings.fontSize = Math.max(15, Math.min(18, +$("sFontSize").value || 16));
-    if ($("sPermCamera")) settings.permCamera = $("sPermCamera").checked;
-    if ($("sPermStorage")) settings.permStorage = $("sPermStorage").checked;
     saveSettings();
-    applyAppearance();
     toast("Settings saved");
   }
 
@@ -1719,18 +1569,7 @@
   }
 
   function startCamera() {
-    if (!settings.permCamera) {
-      toast("Enable camera permission in Settings first (requires HTTPS)");
-      return;
-    }
-    if (!window.isSecureContext) {
-      toast("Camera needs a secure origin (https:// or localhost)");
-      return;
-    }
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      toast("Camera not supported in this browser");
-      return;
-    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return toast("Camera requires HTTPS and a supported browser");
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false })
       .then(function (stream) {
         liveStream = stream;
@@ -1852,11 +1691,7 @@
 
     $("bSettings").onclick = function () { fillSettingsForm(); openDialog("dSettings"); };
     $("bMembers").onclick = function () { renderMembers(); openDialog("dMembers"); };
-    $("bProjects").onclick = function () {
-      resetProjForm();
-      renderProjects();
-      openDialog("dProjects");
-    };
+    $("bProjects").onclick = function () { renderProjects(); openDialog("dProjects"); };
 
     $("sEngine").onchange = function () {
       $("customBlock").classList.toggle("hidden", $("sEngine").value !== "custom");
@@ -1893,9 +1728,7 @@
         state = defaultState();
         saveCurrent();
         render();
-        resetProjForm();
         closeDialog("dProjects");
-        toast("New project");
       };
       if (state.messages.length) {
         uiConfirm("Save current and start new?").then(function (ok) {
@@ -1905,17 +1738,6 @@
         });
       } else go();
     };
-    if ($("bSaveProjTitle")) {
-      $("bSaveProjTitle").onclick = function () { saveProjTitleFromForm(); };
-    }
-    if ($("projTitle")) {
-      $("projTitle").addEventListener("keydown", function (e) {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          saveProjTitleFromForm();
-        }
-      });
-    }
     $("bExport").onclick = function () {
       var blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
       var a = document.createElement("a");
@@ -1958,7 +1780,6 @@
 
   function boot() {
     try { loadAll(); } catch (e) { showError("loadAll: " + e.message); }
-    try { applyAppearance(); } catch (e) { /* ignore */ }
     try { initEvents(); } catch (e) { showError("initEvents: " + e.message); }
     try { render(); } catch (e) { showError("render: " + e.message); }
   }
