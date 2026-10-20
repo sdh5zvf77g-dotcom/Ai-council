@@ -1,207 +1,2812 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#0b0d17">
-<title>AI Council</title>
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="manifest" href="manifest.webmanifest">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:#0b0d17;color:#eef0ff;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-body{display:flex;flex-direction:column;height:100dvh;min-height:0;overflow:hidden}
-button,input,select,textarea{font:inherit;color:inherit}
-button{cursor:pointer;border:none;background:none;-webkit-tap-highlight-color:transparent}
-header{flex:none;display:flex;align-items:center;gap:8px;padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top,0px));background:#11142a;border-bottom:1px solid #2a3055;z-index:20}
-.logo{font-weight:700;font-size:1.05rem}.logo span{color:#3dd9c5}
-#phaseChip{font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:999px;background:#1e2340;color:#3dd9c5;border:1px solid #2a3055}
-.hdr-actions{margin-left:auto;display:flex;gap:4px}
-.icon-btn{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;color:#8b92b8;font-size:1.1rem}
-#statusBar{flex:none;display:none;align-items:center;gap:8px;padding:6px 14px;font-size:.8rem;color:#8b92b8;background:#11142a;border-bottom:1px solid #2a3055}
-#statusBar.show{display:flex}
-.spin{width:12px;height:12px;border:2px solid #2a3055;border-top-color:#7c8cff;border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-main{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;background:#0b0d17;color:#eef0ff;display:flex;flex-direction:column;gap:10px}
-.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 20px;gap:14px;min-height:240px;color:#8b92b8}
-.empty h3{color:#eef0ff;font-size:1.25rem}
-.empty p{max-width:300px;font-size:.92rem}
-.tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:320px;margin-top:8px}
-.tpl-btn{padding:12px 10px;border-radius:12px;background:#161a32;border:1px solid #2a3055;font-size:.85rem;font-weight:500;color:#eef0ff}
-.msg{display:flex;flex-direction:column;gap:4px;max-width:100%}
-.msg.you{align-items:flex-end}
-.msg .bubble{background:#161a32;border:1px solid #2a3055;border-radius:12px;padding:10px 13px;max-width:92%;white-space:pre-wrap;word-break:break-word}
-.msg.you .bubble{background:#7c8cff;border-color:transparent;color:#fff}
-.msg.system .bubble{background:transparent;border-style:dashed;color:#8b92b8;font-size:.88rem;text-align:center;max-width:100%}
-.msg .who{font-size:.75rem;font-weight:600;display:flex;align-items:center;gap:6px}
-.dot{width:10px;height:10px;border-radius:50%;flex:none}
-.card{background:#1e2340;border:1px solid #2a34;background:#1e2340;border-radius:12px;padding:10px 12px;font-size:.88rem}
-.card summary{cursor:pointer;font-weight:700;color:#3dd9c5}
-.deliv{background:#1e2340;border:1px solid #4ade80;border-radius:12px;padding:12px}
-.deliv .dh{font-weight:700;color:#4ade80;margin-bottom:6px}
-.deliv .actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.deliv .chip{font-size:.78rem;padding:6px 10px;min-height:36px;color:#8b92b8}
-footer{flex:none;padding:8px 10px calc(10px + env(safe-area-inset-bottom,0px));background:#11142a;border-top:1px solid #2a3055;display:flex;flex-direction:column;gap:6px;z-index:20}
-.toolbar{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-.tbtn{flex:none;display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:8px;background:#161a32;border:1px solid #2a3055;font-size:.8rem;color:#8b92b8;white-space:nowrap;min-width:44px;min-height:44px}
-.tbtn.primary{background:#7c8cff;color:#fff;border-color:transparent;font-weight:600;min-width:44px;min-height:44px}
-.input-row{display:flex;gap:8px;align-items:flex-end;width:100%;min-width:0}.input-row textarea{min-width:0}
-#userInput{flex:1;min-height:44px;max-height:120px;resize:none;background:#161a32;border:1px solid #2a3055;border-radius:12px;padding:10px 12px;color:#eef0ff;line-height:1.4;font-size:16px}
-#sendBtn{width:48px;min-width:48px;height:48px;border-radius:12px;background:#7c8cff;color:#fff;font-size:1rem;font-weight:700;display:grid;place-items:center;flex:0 0 48px;visibility:visible;opacity:1;position:relative;z-index:25;touch-action:manipulation;min-height:44px}
-#sendBtn:focus-visible{outline:3px solid #eef0ff;outline-offset:2px}#sendBtn[aria-busy="true"]{background:#5968d6}
-#sendBtn:disabled{opacity:.4}
-dialog{border:none;border-radius:16px;background:#161a32;color:#eef0ff;padding:0;max-width:96vw;width:420px;max-height:88dvh;box-shadow:0 20px 60px rgba(0,0,0,.5)}
-dialog::backdrop{background:rgba(0,0,0,.55)}
-.dlg{padding:18px 16px;overflow-y:auto;max-height:88dvh}
-.dlg h2{font-size:1.15rem;margin-bottom:12px}
-.dlg label{display:block;margin:12px 0 4px;font-weight:600;font-size:.88rem}
-.dlg input[type=text],.dlg input[type=password],.dlg input[type=number],.dlg select,.dlg textarea{width:100%;background:#0b0d17;border:1px solid #2a3055;border-radius:10px;padding:9px 11px;font-size:16px;color:#eef0ff}
-.dlg textarea{min-height:80px;resize:vertical}
-.dlg .hint{color:#8b92b8;font-size:.78rem;margin:3px 0 0}
-.dlg .chk{display:flex;gap:10px;align-items:center;margin:10px 0}
-.dlg .chk input{width:20px;height:20px;flex:none}
-.dlg .chk label{margin:0;font-weight:500}
-.dfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
-.btn{padding:8px 14px;border-radius:10px;border:1px solid #2a3055;font-size:.9rem;font-weight:500;color:#eef0ff;min-width:44px;min-height:44px}
-.btn.primary{background:#7c8cff;color:#fff;border-color:transparent;min-width:44px;min-height:44px}
-.btn.danger{color:#f87171}
-.member-row,.proj-row{display:flex;gap:8px;align-items:center;background:#1e2340;border:1px solid #234;border-radius:10px;padding:8px;margin:6px 0}
-.member-row input[type=text]{flex:1;min-width:0;background:#0b0d17;border:1px solid #234;border-radius:8px;padding:6px 8px;color:#eef0ff}
-.member-row select{background:#0b0d17;border:1px solid #234;border-radius:8px;padding:6px;color:#eef0ff}
-.proj-row .info{flex:1;min-width:0}
-.proj-row .info b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.proj-row .info small{color:#8b92b8}
-.provider-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
-.pchip{padding:8px;border-radius:10px;border:1px solid #234;background:#1e2340;text-align:center;font-size:.82rem;font-weight:600;color:#eef0ff}
-.pchip.active{border-color:#7c8cff;background:#7c8cff;color:#fff}
-#toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#eef0ff;color:#0b0d17;padding:10px 18px;border-radius:999px;font-size:.88rem;opacity:0;pointer-events:none;transition:opacity .25s;z-index:100;max-width:90vw;text-align:center}
-#toast.show{opacity:1}
-#dPreview{width:96vw;height:92dvh;max-width:none;max-height:92dvh;padding:0;flex-direction:column}
-#dPreview[open]{display:flex}
-.pvbar{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #2a3055;flex:none;min-height:44px}
-#pvFrame{flex:1;width:100%;border:0;background:#fff}
-#errBanner{position:fixed;top:0;left:0;right:0;z-index:9999;background:#b00020;color:#fff;padding:10px 12px;font:13px/1.4 -apple-system,sans-serif;white-space:pre-wrap;display:none}
-.hidden{display:none!important}
-#stageBar{flex:none;display:flex;align-items:center;gap:6px;padding:6px 12px;background:#0e1124;border-bottom:1px solid #2a3055;font-size:.78rem}
-#stageBar .arrow{color:#2a3055}
-.stage{padding:3px 10px;border-radius:999px;border:1px solid #2a3055;color:#8b92b8;font-weight:600}
-.stage.active{color:#0b0d17;background:#3dd9c5;border-color:#3dd9c5}
-.stage.done{color:#4ade80;border-color:#2f6f4a}
-.msg .who .to{color:#8b92b8;font-weight:400}
-.sumtxt{margin-top:6px;white-space:pre-wrap;font-size:.88rem}
-.dots{display:inline-flex;gap:4px;align-items:center;height:14px}
-.dots i{width:7px;height:7px;border-radius:50%;background:#8b92b8;animation:blink 1.2s infinite both}
-.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
-@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
-.cta{display:flex;gap:12px;align-items:center;justify-content:space-between;background:#12301f;border:1px solid #4ade80;border-radius:12px;padding:12px}
-.cta small{color:#9bd9b4}
-.tbtn.big{background:#4ade80;color:#06210f;font-weight:700;border-color:transparent;min-width:44px;min-height:44px}
-.tbtn.warn{background:#3a1d22;color:#f87171;border-color:#6b2a33;min-width:44px;min-height:44px}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Crazy Bob" />
+  <meta name="theme-color" content="#eab308" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="crazy-bob-icon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <title>Crazy Bob</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #334155;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --user-bubble: #0ea5e9;
+      --border: #334155;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --planner: #a78bfa;
+      --writer: #34d399;
+      --reviewer: #fb923c;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-top: env(safe-area-inset-top, 0px);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      height: 100%; height: 100dvh; overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg); color: var(--text);
+    }
+
+    body {
+      display: flex; flex-direction: column;
+      padding-top: var(--safe-top);
+    }
+
+    header {
+      flex-shrink: 0; padding: 12px 16px;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+
+    .header-title { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+    .header-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--text-muted); display: inline-block; margin-right: 6px;
+    }
+    .status-dot.ready { background: var(--success); }
+    .status-dot.loading { background: var(--warning); animation: pulse 1.2s infinite; }
+    .status-dot.error { background: var(--danger); }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    .header-actions { display: flex; gap: 6px; }
+
+    .icon-btn {
+      width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--text-muted); font-size: 16px;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    .icon-btn:active { opacity: 0.7; }
+
+    .model-bar {
+      flex-shrink: 0; padding: 10px 16px; background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+    }
+
+    select, button {
+      font-size: 14px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--text); padding: 8px 12px; outline: none;
+    }
+
+    select {
+      flex: 1; min-width: 0; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px;
+    }
+
+    button { cursor: pointer; font-weight: 500; white-space: nowrap; transition: opacity 0.15s; }
+    button:active { opacity: 0.75; }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    #loadBtn {
+      background: var(--accent); color: #0f172a; border-color: var(--accent); font-weight: 600;
+    }
+    #loadBtn.loading { background: var(--surface2); color: var(--text-muted); border-color: var(--border); }
+
+    .mode-toggle {
+      display: flex; background: var(--surface); border-radius: 10px; border: 1px solid var(--border); overflow: hidden;
+    }
+    .mode-toggle button {
+      border: none; border-radius: 0; padding: 8px 14px; background: transparent; color: var(--text-muted); font-size: 13px;
+    }
+    .mode-toggle button.active {
+      background: var(--accent); color: #0f172a; font-weight: 600;
+    }
+
+    .progress-wrap {
+      display: none; padding: 8px 16px 12px; background: var(--bg); border-bottom: 1px solid var(--border);
+    }
+    .progress-wrap.visible { display: block; }
+    .progress-bar { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.25s ease; }
+    .progress-text { font-size: 12px; color: var(--text-muted); margin-top: 6px; text-align: center; }
+
+    #chat {
+      flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      padding: 16px; display: flex; flex-direction: column; gap: 12px;
+    }
+
+    .msg {
+      max-width: 92%; padding: 12px 14px; border-radius: 16px;
+      font-size: 15px; line-height: 1.45; word-wrap: break-word; position: relative;
+    }
+    .msg .content { white-space: pre-wrap; }
+    .msg .content.md { white-space: normal; }
+    .msg .content.md p { margin: 0 0 0.55em; }
+    .msg .content.md p:last-child { margin-bottom: 0; }
+    .msg .content.md ul, .msg .content.md ol { margin: 0.35em 0 0.55em 1.2em; padding: 0; }
+    .msg .content.md li { margin-bottom: 0.2em; }
+    .msg .content.md code {
+      background: rgba(0,0,0,0.25); padding: 1px 5px; border-radius: 4px; font-size: 0.9em;
+    }
+    .msg .content.md pre {
+      background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; overflow-x: auto;
+      margin: 0.45em 0; font-size: 0.85em;
+    }
+    .msg .content.md pre code { background: none; padding: 0; }
+    .msg .content.md strong { font-weight: 700; }
+    .msg .content.md a { color: var(--accent); }
+
+    .think-block {
+      margin: 6px 0 8px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.6);
+      font-size: 12.5px;
+      overflow: hidden;
+    }
+    .think-block summary {
+      padding: 7px 12px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-weight: 500;
+      list-style: none;
+      user-select: none;
+    }
+    .think-block summary::-webkit-details-marker { display: none; }
+    .think-block[open] summary { border-bottom: 1px solid var(--border); color: var(--accent); }
+    .think-content {
+      padding: 8px 12px 10px;
+      color: #94a3b8;
+      white-space: pre-wrap;
+      line-height: 1.45;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    .msg-actions {
+      display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap;
+    }
+    .msg-actions button {
+      background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+      font-size: 12px; padding: 4px 8px; border-radius: 8px; cursor: pointer;
+    }
+    .msg-actions button:active { opacity: 0.6; }
+
+    .msg.user {
+      align-self: flex-end; background: var(--user-bubble); color: #0f172a;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg.assistant {
+      align-self: flex-start; background: var(--surface); border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg.system {
+      align-self: center; background: transparent; color: var(--text-muted);
+      font-size: 13px; text-align: center; max-width: 95%; padding: 8px 12px;
+    }
+
+    .msg .label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+      margin-bottom: 5px; display: flex; align-items: center; gap: 6px;
+    }
+
+    .msg.planner { border-left: 3px solid var(--planner); }
+    .msg.planner .label { color: var(--planner); }
+    .msg.writer { border-left: 3px solid var(--writer); }
+    .msg.writer .label { color: var(--writer); }
+    .msg.reviewer { border-left: 3px solid var(--reviewer); }
+    .msg.reviewer .label { color: var(--reviewer); }
+
+    .agent-badge {
+      display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    }
+
+    .typing { display: inline-flex; gap: 4px; padding: 4px 0; }
+    .typing span {
+      width: 6px; height: 6px; background: var(--text-muted); border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+    .typing span:nth-child(2) { animation-delay: 0.15s; }
+    .typing span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes bounce {
+      0%,60%,100% { transform: translateY(0); }
+      30% { transform: translateY(-4px); }
+    }
+
+    .team-status {
+      display: none; padding: 8px 16px; background: var(--surface); border-bottom: 1px solid var(--border);
+      font-size: 12px; color: var(--text-muted); text-align: center;
+    }
+    .team-status.visible { display: block; }
+    .team-status strong { color: var(--text); }
+
+    .input-area {
+      flex-shrink: 0; padding: 10px 12px calc(12px + var(--safe-bottom));
+      background: var(--surface); border-top: 1px solid var(--border);
+      display: flex; gap: 8px; align-items: flex-end;
+    }
+
+    #userInput {
+      flex: 1; min-height: 44px; max-height: 120px; padding: 12px 14px;
+      border-radius: 22px; border: 1px solid var(--border); background: var(--bg);
+      color: var(--text); font-size: 16px; line-height: 1.35; resize: none;
+      outline: none; font-family: inherit;
+    }
+    #userInput:focus { border-color: var(--accent); }
+
+    #sendBtn {
+      width: 44px; height: 44px; border-radius: 50%; background: var(--accent);
+      color: #0f172a; border: none; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 18px;
+    }
+    #sendBtn:disabled { background: var(--surface2); color: var(--text-muted); }
+
+    #micBtn {
+      width: 44px; height: 44px; border-radius: 50%; background: var(--surface2);
+      color: var(--text-muted); border: 1px solid var(--border); display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px;
+    }
+    #micBtn:disabled { opacity: 0.45; }
+    #micBtn.listening {
+      background: var(--danger); color: white; border-color: var(--danger);
+      animation: pulse 1.2s infinite;
+    }
+    #micBtn.speaking {
+      background: var(--success); color: white; border-color: var(--success);
+    }
+
+    #stopBtn {
+      display: none; width: 44px; height: 44px; border-radius: 50%;
+      background: var(--danger); color: white; border: none;
+      align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px;
+    }
+    #stopBtn.visible { display: flex; }
+
+    /* Settings form */
+    .settings-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; margin-bottom: 14px; font-size: 14px;
+    }
+    .settings-row label { color: var(--text); flex: 1; }
+    .settings-row select {
+      flex: 1.2; min-width: 0; font-size: 13px; padding: 8px 28px 8px 10px;
+    }
+    .toggle {
+      position: relative; width: 48px; height: 28px; flex-shrink: 0;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle .slider {
+      position: absolute; cursor: pointer; inset: 0;
+      background: var(--surface2); border-radius: 28px; border: 1px solid var(--border);
+      transition: 0.2s;
+    }
+    .toggle .slider:before {
+      content: ""; position: absolute; height: 20px; width: 20px;
+      left: 3px; bottom: 3px; background: var(--text-muted);
+      border-radius: 50%; transition: 0.2s;
+    }
+    .toggle input:checked + .slider { background: var(--accent); border-color: var(--accent); }
+    .toggle input:checked + .slider:before {
+      transform: translateX(20px); background: #0f172a;
+    }
+    .settings-hint {
+      font-size: 12px; color: var(--text-muted); margin: -6px 0 14px; line-height: 1.35;
+    }
+
+    .quick-actions {
+      display: none; gap: 8px; padding: 0 16px 10px; overflow-x: auto;
+      -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    }
+    .quick-actions.visible { display: flex; }
+    .quick-actions::-webkit-scrollbar { display: none; }
+
+    .chip {
+      flex-shrink: 0; padding: 7px 14px; border-radius: 20px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text-muted); font-size: 13px; white-space: nowrap; cursor: pointer;
+    }
+    .chip:active { background: var(--surface2); }
+    .chip-online {
+      border-color: #38bdf8;
+      color: #7dd3fc;
+    }
+
+    .welcome {
+      text-align: center; padding: 36px 20px; color: var(--text-muted);
+    }
+    .welcome h2 { font-size: 20px; color: var(--text); margin-bottom: 8px; font-weight: 600; }
+    .welcome p { font-size: 14px; line-height: 1.5; max-width: 300px; margin: 0 auto 12px; }
+
+    .agents-row {
+      display: flex; justify-content: center; gap: 16px; margin: 18px 0 8px; flex-wrap: wrap;
+    }
+    .agent-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 10px 14px; text-align: center; min-width: 90px;
+    }
+    .agent-card .name { font-size: 13px; font-weight: 600; }
+    .agent-card .role { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .agent-card.planner .name { color: var(--planner); }
+    .agent-card.writer .name { color: var(--writer); }
+    .agent-card.reviewer .name { color: var(--reviewer); }
+
+    /* Modal */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      z-index: 100; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.visible { display: flex; }
+    .modal {
+      background: var(--surface); border-radius: 16px; padding: 20px; max-width: 340px; width: 100%;
+      border: 1px solid var(--border);
+    }
+    .modal h3 { margin-bottom: 10px; font-size: 17px; }
+    .modal p { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.4; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .modal-actions button { padding: 10px 16px; }
+    .btn-danger { background: var(--danger); color: white; border-color: var(--danger); }
+    .btn-secondary { background: var(--surface2); }
+  </style>
 </head>
 <body>
-<div id="errBanner"></div>
-<header>
-  <div class="logo">AI <span>Council</span></div>
-  <div id="phaseChip">Idle</div>
-  <div class="hdr-actions">
-    <button type="button" class="icon-btn" id="bProjects" title="Projects">P</button>
-    <button type="button" class="icon-btn" id="bMembers" title="Team">T</button>
-    <button type="button" class="icon-btn" id="bSettings" title="Settings">S</button>
+  <header>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <img src="apple-touch-icon.png" alt="Crazy Bob" width="36" height="36" style="border-radius:8px;flex-shrink:0;" />
+      <div>
+        <div class="header-title">Crazy Bob</div>
+        <div class="header-sub">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">Model not loaded</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="settingsBtn" title="Settings" aria-label="Settings">⚙️</button>
+      <button class="icon-btn" id="clearBtn" title="Clear chat history" aria-label="Clear chat">🗑️</button>
+    </div>
+  </header>
+
+  <div class="model-bar">
+    <select id="modelSelect">
+      <option value="SmolLM2-360M-Instruct-q4f16_1-MLC">SmolLM2 360M (fastest)</option>
+      <option value="Llama-3.2-1B-Instruct-q4f16_1-MLC" selected>Llama 3.2 1B (recommended)</option>
+      <option value="Qwen2.5-0.5B-Instruct-q4f16_1-MLC">Qwen2.5 0.5B</option>
+      <option value="Llama-3.2-3B-Instruct-q4f16_1-MLC">Llama 3.2 3B (best quality)</option>
+    </select>
+    <button id="loadBtn">Load</button>
   </div>
-</header>
-<div id="stageBar" class="hidden"><div class="stage" id="st_research">Research</div><span class="arrow">›</span><div class="stage" id="st_plan">Plan</div><span class="arrow">›</span><div class="stage" id="st_build">Build</div></div>
-<div id="statusBar"><div class="spin"></div><span id="statusText">Working...</span></div>
-<main id="chat">
-  <div class="empty" id="emptyState">
-    <h3>AI Council</h3>
-    <p>Your team researches, agrees, plans, agrees again, and only then builds and previews your app.</p>
-    <div class="tpl-grid">
-      <button type="button" class="tpl-btn" data-tpl="build">Build an app</button>
-      <button type="button" class="tpl-btn" data-tpl="research">Research a topic</button>
-      <button type="button" class="tpl-btn" data-tpl="improve">Improve this app</button>
-      <button type="button" class="tpl-btn" data-tpl="debug">Debug / fix code</button>
+
+  <div class="model-bar" style="padding-top:0; border-top:none;">
+    <div class="mode-toggle" id="modeToggle">
+      <button type="button" data-mode="single" class="active">Single</button>
+      <button type="button" data-mode="team">Team (3 agents)</button>
     </div>
   </div>
-</main>
-<footer>
-  <div class="toolbar">
-    <button type="button" class="tbtn warn hidden" id="bStop">■ Stop</button>
-    <button type="button" class="tbtn hidden" id="bContinue">▶ Continue</button>
-    <button type="button" class="tbtn big hidden" id="bBuild">🛠 Build &amp; Preview</button>
-    <button type="button" class="tbtn hidden" id="bPreview">▶ Preview</button>
-    <button type="button" class="tbtn" id="bResearch">Research</button>
-    <button type="button" class="tbtn" id="bUpload">Upload</button>
-    <button type="button" class="tbtn" id="bCamera">Camera</button>
-    <button type="button" class="tbtn" id="bFiles">Files</button>
-    <button type="button" class="tbtn" id="bRefs">Notes</button>
-    <button type="button" class="tbtn hidden" id="bDownload">Download</button>
+
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text" id="progressText">Preparing…</div>
   </div>
-  <div class="input-row">
-    <textarea id="userInput" rows="1" placeholder="Describe a problem or app to build..." enterkeyhint="send"></textarea>
-    <button type="button" id="micBtn" title="Voice input" aria-label="Voice input" style="width:44px;height:44px;flex:0 0 44px;border-radius:12px;background:#161a32;border:1px solid #2a3055;color:#8b92b8;font-size:1.15rem;display:grid;place-items:center">🎤</button>
-    <button type="button" id="sendBtn" aria-label="Send">Go</button>
+
+  <div class="team-status" id="teamStatus">
+    Team mode: <strong>Planner</strong> → <strong>Writer</strong> → <strong>Reviewer</strong> work together
   </div>
-</footer>
-<div id="toast"></div>
-<dialog id="dSettings"><div class="dlg"><h2>Settings</h2>
-<label>AI Engine</label>
-<select id="sEngine"><option value="free">Free AI (no API key)</option><option value="local">Built-in team (offline, no AI model)</option><option value="custom">Custom API endpoint (your key)</option></select>
-<div id="freeBlock"><p class="hint">Free AI uses a public community text service. No key needed, but it can be slow or busy. If it fails, the team keeps talking with its built-in voices, so you always see them work.</p><button type="button" class="btn" id="bTestFree" style="margin-top:8px">Test free AI</button></div>
-<div id="customBlock" class="hidden">
-<label>Provider presets</label>
-<div class="provider-grid">
-<button type="button" class="pchip" data-p="groq">Groq</button>
-<button type="button" class="pchip" data-p="openrouter">OpenRouter</button>
-<button type="button" class="pchip" data-p="gemini">Gemini</button>
-<button type="button" class="pchip" data-p="nvidia">NVIDIA</button>
-</div>
-<label for="sUrl">Endpoint URL</label><input type="text" id="sUrl" placeholder="https://api.openai.com/v1/chat/completions" autocomplete="off" autocapitalize="off">
-<label for="sModel">Model</label><input type="text" id="sModel" list="modelList" placeholder="llama-3.3-70b-versatile" autocomplete="off" autocapitalize="off"><datalist id="modelList"></datalist>
-<button type="button" class="btn" id="bLoadModels" style="margin-top:6px">Load available models</button><p class="hint" id="modelsMsg"></p>
-<label for="sKey">API Key</label><input type="password" id="sKey" placeholder="sk-..." autocomplete="off">
-<p class="hint">Free-tier availability and limits vary. API keys are stored in this browser on this device; do not use a shared device. Some providers block browser requests (CORS); a small server-side proxy may be required.</p>
-<button type="button" class="btn" id="bTestKey" style="margin-top:8px">Test connection</button>
-</div>
-<p class="hint" id="testResult" style="margin-top:8px"></p>
-<div class="chk"><input type="checkbox" id="sBuildMode" checked><label for="sBuildMode">Team workflow: research, plan, build</label></div>
-<div class="chk"><input type="checkbox" id="sWeb" checked><label for="sWeb">Web research</label></div>
-<div class="chk"><input type="checkbox" id="sPerMember"><label for="sPerMember">One AI call per member (slower, more varied)</label></div>
-<div class="chk"><input type="checkbox" id="sAutoBuild"><label for="sAutoBuild">Build automatically when the plan is agreed</label></div>
-<p class="hint">Free models allow roughly 200 requests a day. Leave "One AI call per member" off and keep plan rounds at 3 to save them.</p>
-<label for="sPlanRounds">Minimum plan rounds (2-8)</label><input type="number" id="sPlanRounds" min="2" max="8" value="3">
-<label for="sBuildIters">Max build attempts (1-8)</label><input type="number" id="sBuildIters" min="1" max="8" value="4">
-<div class="chk"><input type="checkbox" id="sAutosave" checked><label for="sAutosave">Autosave</label></div>
-<div class="chk"><input type="checkbox" id="sSpeak"><label for="sSpeak">Speak team messages (text-to-speech)</label></div>
-<div class="dfoot"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" id="bSaveSettings">Save</button></div>
-</div></dialog>
-<dialog id="dMembers"><div class="dlg"><h2>Council members</h2><div id="membersList"></div>
-<div class="dfoot"><button type="button" class="btn" id="bAddMember">+ Add</button><button type="button" class="btn primary" data-close>Done</button></div></div></dialog>
-<dialog id="dProjects"><div class="dlg"><h2>Projects</h2><div id="projectsList"></div>
-<div class="dfoot"><button type="button" class="btn" id="bNewProject">+ New</button><button type="button" class="btn" id="bImport">Import</button><button type="button" class="btn" id="bExport">Export</button><button type="button" class="btn" id="bReport">Report</button><button type="button" class="btn" id="bBundle">Bundle .zip</button><button type="button" class="btn primary" data-close>Done</button></div></dialog>
-<dialog id="dRefs"><div class="dlg"><h2>Reference notes</h2><textarea id="refsInput" placeholder="Constraints, APIs..."></textarea>
-<div class="dfoot"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" id="bSaveRefs">Save</button></div></div></dialog>
-<dialog id="dFiles"><div class="dlg"><h2>Workspace files</h2><div id="filesList"></div>
-<div class="dfoot"><button type="button" class="btn primary" data-close>Close</button></div></div></dialog>
-<dialog id="dCamera"><div class="dlg"><h2>Camera</h2>
-<video id="camVideo" autoplay playsinline style="width:100%;border-radius:10px;background:#000;max-height:50vh"></video>
-<canvas id="camCanvas" class="hidden"></canvas>
-<div class="dfoot"><button type="button" class="btn" id="bCamStop">Stop</button><button type="button" class="btn primary" id="bCamSnap">Capture</button></div></div></dialog>
-<dialog id="dConfirm"><div class="dlg"><h2 id="tConfirm">Confirm</h2><p id="confirmMsg"></p>
-<div class="dfoot"><button type="button" class="btn" id="confirmNo">Cancel</button><button type="button" class="btn primary" id="confirmYes">Yes</button></div></div></dialog>
-<dialog id="dPrompt"><div class="dlg"><h2 id="tPrompt">Input</h2><p id="promptMsg"></p><input type="text" id="promptVal">
-<div class="dfoot"><button type="button" class="btn" id="promptNo">Cancel</button><button type="button" class="btn primary" id="promptYes">OK</button></div></div></dialog>
-<dialog id="dPreview"><div class="pvbar"><strong id="pvTitle">Preview</strong><button type="button" class="btn" data-close>Close</button></div>
-<iframe id="pvFrame" sandbox="allow-scripts allow-forms allow-modals allow-popups" title="preview"></iframe></dialog>
-<script>
-if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
-  });
-}
-</script>
-<script src="app.js?v=8"></script>
+
+  <div id="chat">
+    <div class="welcome" id="welcome">
+      <img src="apple-touch-icon.png" alt="Crazy Bob" width="72" height="72" style="border-radius:16px;margin-bottom:12px;" />
+      <h2>Crazy Bob</h2>
+      <p>Your local AI on this phone. Voice in/out, persistent memory, news, research, web search, weather, currency, crypto, define, translate &amp; URL summarise. Add free API keys in ⚙️ for richer web results.</p>
+      <div class="agents-row">
+        <div class="agent-card planner">
+          <div class="name">Planner</div>
+          <div class="role">Analyses & plans</div>
+        </div>
+        <div class="agent-card writer">
+          <div class="name">Writer</div>
+          <div class="role">Drafts letters & replies</div>
+        </div>
+        <div class="agent-card reviewer">
+          <div class="name">Reviewer</div>
+          <div class="role">Improves & polishes</div>
+        </div>
+      </div>
+      <p style="font-size:12px;opacity:0.8;margin-top:12px">Load a model to start. History is stored locally on this device.</p>
+    </div>
+  </div>
+
+  <div class="quick-actions" id="quickActions">
+    <div class="chip" data-prompt="I need help thinking through a difficult personal problem.">Discuss a problem</div>
+    <div class="chip" data-prompt="Please write a formal letter for me. Ask any details you need first.">Write a letter</div>
+    <div class="chip" data-prompt="Help me draft a polite but firm email.">Draft an email</div>
+    <div class="chip" data-prompt="Give me clear step-by-step advice on this situation.">Step-by-step advice</div>
+    <div class="chip chip-online" id="newsChip">📰 Today's news</div>
+    <div class="chip chip-online" id="researchChip">🔍 Research a topic</div>
+    <div class="chip chip-online" id="webSearchChip">🌐 Search the web</div>
+    <div class="chip chip-online" id="weatherChip">🌤️ Weather</div>
+    <div class="chip chip-online" id="currencyChip">💱 Currency</div>
+    <div class="chip chip-online" id="cryptoChip">📈 Crypto</div>
+    <div class="chip chip-online" id="defineChip">📖 Define</div>
+    <div class="chip chip-online" id="translateChip">🌍 Translate</div>
+    <div class="chip chip-online" id="summarizeChip">🔗 Summarize URL</div>
+  </div>
+
+  <div class="input-area">
+    <textarea id="userInput" placeholder="Describe a problem or ask for a letter…" rows="1" disabled></textarea>
+    <button id="micBtn" disabled title="Talk to Crazy Bob" aria-label="Voice input">🎤</button>
+    <button id="stopBtn" title="Stop generating" aria-label="Stop">■</button>
+    <button id="sendBtn" disabled>↑</button>
+  </div>
+
+  <!-- Clear confirm modal -->
+  <div class="modal-overlay" id="clearModal">
+    <div class="modal">
+      <h3>Clear chat history?</h3>
+      <p>This will permanently delete all saved conversations on this device. The model cache is not affected.</p>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="cancelClear">Cancel</button>
+        <button class="btn-danger" id="confirmClear">Clear everything</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal" style="max-width:380px; max-height:85vh; overflow-y:auto;">
+      <h3>Settings</h3>
+      <div class="settings-row">
+        <label for="autoSpeak">Crazy Bob talks back</label>
+        <label class="toggle">
+          <input type="checkbox" id="autoSpeak" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <p class="settings-hint">When on, Bob speaks his replies out loud after generating them.</p>
+
+      <div class="settings-row">
+        <label for="voiceSelect">Voice</label>
+        <select id="voiceSelect">
+          <option value="">Loading voices…</option>
+        </select>
+      </div>
+      <p class="settings-hint">Pick a system voice. Availability depends on your device & language packs.</p>
+
+      <div class="settings-row">
+        <label for="speechRate">Speaking speed</label>
+        <select id="speechRate">
+          <option value="0.85">Slow</option>
+          <option value="1" selected>Normal</option>
+          <option value="1.2">Fast</option>
+          <option value="1.4">Very fast</option>
+        </select>
+      </div>
+
+      <div class="settings-row">
+        <label for="recogLang">Listening language</label>
+        <select id="recogLang">
+          <option value="en-US" selected>English (US)</option>
+          <option value="en-GB">English (UK)</option>
+          <option value="en-AU">English (AU)</option>
+          <option value="th-TH">Thai</option>
+          <option value="es-ES">Spanish</option>
+          <option value="fr-FR">French</option>
+          <option value="de-DE">German</option>
+          <option value="ja-JP">Japanese</option>
+          <option value="zh-CN">Chinese (Simplified)</option>
+        </select>
+      </div>
+      <p class="settings-hint">Language used when you speak into the mic. Requires mic permission.</p>
+
+      <div class="settings-row">
+        <label for="continuousVoice">Continuous conversation</label>
+        <label class="toggle">
+          <input type="checkbox" id="continuousVoice">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <p class="settings-hint">After Bob finishes speaking, automatically start listening again for a back-and-forth chat.</p>
+
+      <div class="settings-row">
+        <label for="personalitySelect">Personality</label>
+        <select id="personalitySelect">
+          <option value="classic" selected>Classic Crazy Bob</option>
+          <option value="calm">Calm & thoughtful</option>
+          <option value="coach">Motivational coach</option>
+          <option value="formal">Professional / formal</option>
+          <option value="witty">Extra witty & sarcastic</option>
+        </select>
+      </div>
+      <p class="settings-hint">Changes how Bob styles his replies. Takes effect on the next message.</p>
+
+      <div class="settings-row" style="margin-top:8px;">
+        <button type="button" id="exportChatBtn" class="btn-secondary" style="width:100%;padding:10px;">Export chat as text</button>
+      </div>
+      <div class="settings-row" style="margin-top:8px;">
+        <button type="button" id="exportMemoryBtn" class="btn-secondary" style="width:100%;padding:10px;">Export full memory (JSON)</button>
+      </div>
+      <div class="settings-row" style="margin-top:8px;">
+        <button type="button" id="importMemoryBtn" class="btn-secondary" style="width:100%;padding:10px;">Import memory (JSON)</button>
+        <input type="file" id="importMemoryFile" accept=".json,application/json" style="display:none;">
+      </div>
+      <p class="settings-hint">Export saves chat + learned rules + event logs + profile. Import restores them. Use this to keep growing past browser limits or move to another device.</p>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+
+      <h3 style="font-size:15px;margin-bottom:10px;">Long-term memory & documents</h3>
+      <p class="settings-hint" style="margin-bottom:10px;">
+        Bob compresses old chats into a permanent User Profile. You can also upload local text or PDF files for offline RAG.
+      </p>
+      <div class="settings-row" style="margin-top:6px;">
+        <button type="button" id="viewProfileBtn" class="btn-secondary" style="width:100%;padding:10px;">View / edit User Profile</button>
+      </div>
+      <div class="settings-row" style="margin-top:8px;">
+        <button type="button" id="uploadDocBtn" class="btn-secondary" style="width:100%;padding:10px;">Upload document (txt / md / pdf)</button>
+        <input type="file" id="docFileInput" accept=".txt,.md,.text,.pdf,text/plain,application/pdf" style="display:none;" multiple>
+      </div>
+      <div id="docList" style="margin-top:10px;font-size:13px;color:var(--text-muted);"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+
+      <h3 style="font-size:15px;margin-bottom:10px;">Online search (optional)</h3>
+      <p class="settings-hint" style="margin-bottom:12px;">
+        Without keys Bob uses Wikipedia + free news feeds. Add a free API key for real web search results.
+        Keys are stored <strong>only on this device</strong>.
+      </p>
+
+      <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:6px;">
+        <label for="serperKey">Serper.dev API key <span style="color:var(--text-muted);font-weight:400;">(2,500 free)</span></label>
+        <input type="password" id="serperKey" placeholder="Paste key from serper.dev" autocomplete="off"
+          style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;">
+      </div>
+      <p class="settings-hint">Get a free key at <a href="https://serper.dev" target="_blank" rel="noopener" style="color:var(--accent);">serper.dev</a> — no card needed.</p>
+
+      <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:6px;margin-top:10px;">
+        <label for="tavilyKey">Tavily API key <span style="color:var(--text-muted);font-weight:400;">(1,000/mo free)</span></label>
+        <input type="password" id="tavilyKey" placeholder="Paste key from tavily.com" autocomplete="off"
+          style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;">
+      </div>
+      <p class="settings-hint">Great for AI — get free key at <a href="https://tavily.com" target="_blank" rel="noopener" style="color:var(--accent);">tavily.com</a>.</p>
+
+      <div class="modal-actions" style="margin-top:18px;">
+        <button class="btn-secondary" id="closeSettings">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm@0.2.79";
+
+    // ---------- IndexedDB helpers (persistent memory + self-improvement) ----------
+    const DB_NAME = "crazy-bob-db";
+    const DB_VERSION = 2;
+    const STORE_MESSAGES = "messages";
+    const STORE_META = "meta";
+    const STORE_RULES = "rules";
+    const STORE_EVENTS = "events";
+    const STORE_PROFILE = "profile";       // long-term compressed user facts
+    const STORE_DOCS = "documents";        // uploaded local documents + chunks
+    const STORE_CHUNKS = "chunks";         // text chunks for RAG
+
+    // Bump version for new stores
+    // (DB_VERSION is defined earlier – we override behaviour here)
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, 3); // v3: profile + docs + chunks
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(STORE_MESSAGES)) {
+            db.createObjectStore(STORE_MESSAGES, { keyPath: "id", autoIncrement: true });
+          }
+          if (!db.objectStoreNames.contains(STORE_META)) {
+            db.createObjectStore(STORE_META, { keyPath: "key" });
+          }
+          if (!db.objectStoreNames.contains(STORE_RULES)) {
+            db.createObjectStore(STORE_RULES, { keyPath: "id", autoIncrement: true });
+          }
+          if (!db.objectStoreNames.contains(STORE_EVENTS)) {
+            db.createObjectStore(STORE_EVENTS, { keyPath: "id", autoIncrement: true });
+          }
+          if (!db.objectStoreNames.contains(STORE_PROFILE)) {
+            db.createObjectStore(STORE_PROFILE, { keyPath: "key" });
+          }
+          if (!db.objectStoreNames.contains(STORE_DOCS)) {
+            db.createObjectStore(STORE_DOCS, { keyPath: "id", autoIncrement: true });
+          }
+          if (!db.objectStoreNames.contains(STORE_CHUNKS)) {
+            const cs = db.createObjectStore(STORE_CHUNKS, { keyPath: "id", autoIncrement: true });
+            cs.createIndex("docId", "docId", { unique: false });
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function saveMessages(msgs) {
+      // Trigger long-term compression if history is getting large
+      if (msgs.length > 420) {
+        compressOldHistoryIfNeeded(msgs).catch(() => {});
+      }
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction([STORE_MESSAGES, STORE_META], "readwrite");
+        const store = tx.objectStore(STORE_MESSAGES);
+        store.clear();
+        // Keep last ~400 messages; older ones are compressed into the permanent User Profile
+        const toSave = msgs.slice(-400);
+        toSave.forEach((m, i) => store.add({ id: i + 1, role: m.role, content: m.content, agent: m.agent || null }));
+        tx.objectStore(STORE_META).put({ key: "lastSaved", value: Date.now() });
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function loadMessages() {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_MESSAGES, "readonly");
+        const req = tx.objectStore(STORE_MESSAGES).getAll();
+        req.onsuccess = () => {
+          const rows = req.result || [];
+          resolve(rows.map(r => ({ role: r.role, content: r.content, agent: r.agent || null })));
+        };
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function clearMessages() {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_MESSAGES, "readwrite");
+        tx.objectStore(STORE_MESSAGES).clear();
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function getUserName() {
+      const db = await openDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_META, "readonly");
+        const req = tx.objectStore(STORE_META).get("userName");
+        req.onsuccess = () => resolve(req.result ? req.result.value : null);
+        req.onerror = () => resolve(null);
+      });
+    }
+
+    async function setUserName(name) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_META, "readwrite");
+        tx.objectStore(STORE_META).put({ key: "userName", value: name });
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function getLastModel() {
+      const db = await openDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_META, "readonly");
+        const req = tx.objectStore(STORE_META).get("lastModel");
+        req.onsuccess = () => resolve(req.result ? req.result.value : null);
+        req.onerror = () => resolve(null);
+      });
+    }
+
+    async function setLastModel(modelId) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_META, "readwrite");
+        tx.objectStore(STORE_META).put({ key: "lastModel", value: modelId });
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function getMeta(key, fallback = null) {
+      const db = await openDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_META, "readonly");
+        const req = tx.objectStore(STORE_META).get(key);
+        req.onsuccess = () => resolve(req.result ? req.result.value : fallback);
+        req.onerror = () => resolve(fallback);
+      });
+    }
+
+    async function setMeta(key, value) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_META, "readwrite");
+        tx.objectStore(STORE_META).put({ key, value });
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    // ---------- Self-Improvement: Rules & Event Logs ----------
+    async function saveEvent(event) {
+      // event: { type, tool?, error?, input?, output?, timestamp }
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_EVENTS, "readwrite");
+        const store = tx.objectStore(STORE_EVENTS);
+        store.add({ ...event, timestamp: event.timestamp || Date.now() });
+        // Keep last ~500 events for richer self-improvement
+        store.getAllKeys().onsuccess = (e) => {
+          const keys = e.target.result || [];
+          if (keys.length > 500) {
+            for (let i = 0; i < keys.length - 500; i++) store.delete(keys[i]);
+          }
+        };
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function loadRecentEvents(limit = 30) {
+      const db = await openDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_EVENTS, "readonly");
+        const req = tx.objectStore(STORE_EVENTS).getAll();
+        req.onsuccess = () => {
+          const rows = (req.result || []).sort((a, b) => b.timestamp - a.timestamp).slice(0, limit);
+          resolve(rows);
+        };
+        req.onerror = () => resolve([]);
+      });
+    }
+
+    async function saveRule(ruleText) {
+      if (!ruleText || ruleText.length < 8) return;
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_RULES, "readwrite");
+        const store = tx.objectStore(STORE_RULES);
+        // Avoid exact duplicates
+        store.getAll().onsuccess = (e) => {
+          const existing = (e.target.result || []).map(r => r.text);
+          if (!existing.includes(ruleText)) {
+            store.add({ text: ruleText, created: Date.now() });
+          }
+        };
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function loadRules(max = 25) {
+      const db = await openDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_RULES, "readonly");
+        const req = tx.objectStore(STORE_RULES).getAll();
+        req.onsuccess = () => {
+          const rows = (req.result || []).sort((a, b) => b.created - a.created).slice(0, max);
+          resolve(rows.map(r => r.text));
+        };
+        req.onerror = () => resolve([]);
+      });
+    }
+
+    async function clearRulesAndEvents() {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction([STORE_RULES, STORE_EVENTS], "readwrite");
+        tx.objectStore(STORE_RULES).clear();
+        tx.objectStore(STORE_EVENTS).clear();
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    // ---------- Long-Term User Profile (Episodic Compression) ----------
+    async function getUserProfile() {
+      const db = await openDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_PROFILE, "readonly");
+        const req = tx.objectStore(STORE_PROFILE).get("main");
+        req.onsuccess = () => resolve(req.result ? req.result.text : "");
+        req.onerror = () => resolve("");
+      });
+    }
+
+    async function setUserProfile(text) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_PROFILE, "readwrite");
+        tx.objectStore(STORE_PROFILE).put({ key: "main", text: text || "", updated: Date.now() });
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    // Background compression: when history is about to be trimmed, summarise the oldest part into the permanent profile
+    let isCompressing = false;
+    async function compressOldHistoryIfNeeded(allMsgs) {
+      if (!engine || isCompressing || allMsgs.length < 420) return;
+      isCompressing = true;
+      try {
+        const toCompress = allMsgs.slice(0, allMsgs.length - 380); // oldest chunk
+        if (toCompress.length < 30) return;
+
+        const existingProfile = await getUserProfile();
+        const transcript = toCompress.map(m => {
+          const who = m.role === "user" ? "User" : (m.agent || "Bob");
+          const clean = (typeof parseCoT === "function" ? parseCoT(m.content).answer : m.content) || m.content;
+          return `${who}: ${String(clean).slice(0, 400)}`;
+        }).join("\n").slice(0, 6000);
+
+        const prompt = `You are updating a permanent long-term user profile for a private on-device AI.
+Existing profile:
+${existingProfile || "(empty)"}
+
+New conversation history that is about to be archived:
+${transcript}
+
+Extract and merge ONLY durable facts: name, location, preferences, ongoing projects, important relationships, goals, technical setup, recurring topics.
+Write a clean, concise third-person profile (max 450 words). Keep previous important facts. Do not invent. Output ONLY the updated profile text.`;
+
+        const chunks = await engine.chat.completions.create({
+          messages: [
+            { role: "system", content: "You maintain a concise long-term user profile. Output only the profile." },
+            { role: "user", content: prompt }
+          ],
+          stream: false,
+          temperature: 0.3,
+          max_tokens: 550
+        });
+        const newProfile = (chunks.choices?.[0]?.message?.content || "").trim();
+        if (newProfile.length > 40) {
+          await setUserProfile(newProfile);
+          console.log("[Crazy Bob] Long-term profile updated");
+        }
+      } catch (err) {
+        console.warn("Profile compression failed", err);
+      } finally {
+        isCompressing = false;
+      }
+    }
+
+    // ---------- Local Documents & Offline RAG ----------
+    async function saveDocument(doc) {
+      // doc: { name, type, text, added }
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction([STORE_DOCS, STORE_CHUNKS], "readwrite");
+        const docStore = tx.objectStore(STORE_DOCS);
+        const req = docStore.add({
+          name: doc.name,
+          type: doc.type || "text",
+          added: doc.added || Date.now(),
+          charCount: (doc.text || "").length
+        });
+        req.onsuccess = () => {
+          const docId = req.result;
+          const chunkStore = tx.objectStore(STORE_CHUNKS);
+          const chunks = chunkText(doc.text || "", 700, 80);
+          chunks.forEach((c, i) => {
+            chunkStore.add({ docId, name: doc.name, index: i, text: c });
+          });
+        };
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    function chunkText(text, size = 700, overlap = 80) {
+      const clean = String(text || "").replace(/\s+/g, " ").trim();
+      if (!clean) return [];
+      const chunks = [];
+      let i = 0;
+      while (i < clean.length) {
+        chunks.push(clean.slice(i, i + size));
+        i += size - overlap;
+      }
+      return chunks;
+    }
+
+    async function listDocuments() {
+      const db = await openDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_DOCS, "readonly");
+        const req = tx.objectStore(STORE_DOCS).getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => resolve([]);
+      });
+    }
+
+    async function deleteDocument(docId) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction([STORE_DOCS, STORE_CHUNKS], "readwrite");
+        tx.objectStore(STORE_DOCS).delete(docId);
+        const idx = tx.objectStore(STORE_CHUNKS).index("docId");
+        const req = idx.getAllKeys(docId);
+        req.onsuccess = () => {
+          (req.result || []).forEach(k => tx.objectStore(STORE_CHUNKS).delete(k));
+        };
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    // Simple but effective keyword + overlap retrieval (works fully offline, no extra model needed)
+    // Architecture is ready to swap in real vector embeddings later
+    async function retrieveRelevantChunks(query, maxChunks = 5) {
+      const db = await openDB();
+      const allChunks = await new Promise((resolve) => {
+        const tx = db.transaction(STORE_CHUNKS, "readonly");
+        const req = tx.objectStore(STORE_CHUNKS).getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => resolve([]);
+      });
+      if (!allChunks.length) return [];
+
+      const q = query.toLowerCase();
+      const terms = q.split(/[^a-z0-9\u0e00-\u0e7f]+/).filter(t => t.length > 2);
+      if (!terms.length) return allChunks.slice(0, maxChunks);
+
+      const scored = allChunks.map(c => {
+        const t = (c.text || "").toLowerCase();
+        let score = 0;
+        for (const term of terms) {
+          if (t.includes(term)) score += 2;
+          // light bonus for multiple occurrences
+          const re = new RegExp(term, "gi");
+          const m = t.match(re);
+          if (m) score += Math.min(m.length, 3);
+        }
+        return { ...c, score };
+      }).filter(c => c.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, maxChunks);
+
+      return scored;
+    }
+
+    async function buildRAGContext(userQuery) {
+      const parts = [];
+      try {
+        const profile = await getUserProfile();
+        if (profile && profile.length > 20) {
+          parts.push("Long-term user profile (permanent memory):\n" + profile.slice(0, 1200));
+        }
+        const chunks = await retrieveRelevantChunks(userQuery, 4);
+        if (chunks.length) {
+          const docText = chunks.map(c => `[From: ${c.name}]\n${c.text}`).join("\n\n");
+          parts.push("Relevant excerpts from your documents:\n" + docText.slice(0, 1800));
+        }
+      } catch (_) {}
+      return parts.join("\n\n");
+    }
+
+    // ---------- DOM ----------
+    const chatEl = document.getElementById("chat");
+    const welcomeEl = document.getElementById("welcome");
+    const userInput = document.getElementById("userInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const loadBtn = document.getElementById("loadBtn");
+    const modelSelect = document.getElementById("modelSelect");
+    const statusDot = document.getElementById("statusDot");
+    const statusText = document.getElementById("statusText");
+    const progressWrap = document.getElementById("progressWrap");
+    const progressFill = document.getElementById("progressFill");
+    const progressText = document.getElementById("progressText");
+    const quickActions = document.getElementById("quickActions");
+    const teamStatus = document.getElementById("teamStatus");
+    const modeToggle = document.getElementById("modeToggle");
+    const clearBtn = document.getElementById("clearBtn");
+    const clearModal = document.getElementById("clearModal");
+    const cancelClear = document.getElementById("cancelClear");
+    const confirmClear = document.getElementById("confirmClear");
+    const settingsBtn = document.getElementById("settingsBtn");
+    const settingsModal = document.getElementById("settingsModal");
+    const closeSettings = document.getElementById("closeSettings");
+    const micBtn = document.getElementById("micBtn");
+    const autoSpeakEl = document.getElementById("autoSpeak");
+    const voiceSelect = document.getElementById("voiceSelect");
+    const speechRateEl = document.getElementById("speechRate");
+    const recogLangEl = document.getElementById("recogLang");
+    const serperKeyEl = document.getElementById("serperKey");
+    const tavilyKeyEl = document.getElementById("tavilyKey");
+
+    let engine = null;
+    let isGenerating = false;
+    let mode = "single";
+    let messages = []; // { role, content, agent? }
+    let userName = null; // remembered name
+
+    // Voice / speech state
+    let autoSpeak = true;
+    let selectedVoiceURI = "";
+    let speechRate = 1;
+    let recogLang = "en-US";
+    let recognition = null;
+    let isListening = false;
+    let voicesLoaded = false;
+
+    // Optional search API keys (stored locally only)
+    let serperKey = "";
+    let tavilyKey = "";
+
+    // ---------- Speech synthesis (Bob talks) ----------
+    function stopSpeaking() {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      micBtn?.classList.remove("speaking");
+    }
+
+    function speakText(text) {
+      if (!autoSpeak || !text || !window.speechSynthesis) return;
+      stopSpeaking();
+      // Clean markdown-ish noise for speech
+      const clean = text
+        .replace(/```[\s\S]*?```/g, " code block ")
+        .replace(/`([^`]+)`/g, "$1")
+        .replace(/[*_#~>]+/g, "")
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (!clean) return;
+
+      const utter = new SpeechSynthesisUtterance(clean);
+      utter.rate = speechRate;
+      utter.pitch = 1;
+      const voices = window.speechSynthesis.getVoices();
+      if (selectedVoiceURI) {
+        const v = voices.find(v => v.voiceURI === selectedVoiceURI);
+        if (v) utter.voice = v;
+      }
+      utter.onstart = () => micBtn?.classList.add("speaking");
+      utter.onend = () => micBtn?.classList.remove("speaking");
+      utter.onerror = () => micBtn?.classList.remove("speaking");
+      window.speechSynthesis.speak(utter);
+    }
+
+    function populateVoices() {
+      if (!window.speechSynthesis) {
+        voiceSelect.innerHTML = '<option value="">Speech not supported</option>';
+        return;
+      }
+      const voices = window.speechSynthesis.getVoices();
+      if (!voices.length) return;
+      voicesLoaded = true;
+      const prev = selectedVoiceURI || voiceSelect.value;
+      voiceSelect.innerHTML = "";
+      // Prefer English voices first, then others
+      const sorted = [...voices].sort((a, b) => {
+        const aEn = a.lang.startsWith("en") ? 0 : 1;
+        const bEn = b.lang.startsWith("en") ? 0 : 1;
+        if (aEn !== bEn) return aEn - bEn;
+        return a.name.localeCompare(b.name);
+      });
+      for (const v of sorted) {
+        const opt = document.createElement("option");
+        opt.value = v.voiceURI;
+        opt.textContent = `${v.name} (${v.lang})${v.default ? " · default" : ""}`;
+        voiceSelect.appendChild(opt);
+      }
+      if (prev && [...voiceSelect.options].some(o => o.value === prev)) {
+        voiceSelect.value = prev;
+      } else if (voiceSelect.options.length) {
+        // Try to pick a good default English voice
+        const preferred = sorted.find(v => /samantha|karen|moira|daniel|alex|google.*english|microsoft.*(aria|guy|jenny)/i.test(v.name))
+          || sorted.find(v => v.lang.startsWith("en") && v.default)
+          || sorted.find(v => v.lang.startsWith("en"))
+          || sorted[0];
+        if (preferred) {
+          voiceSelect.value = preferred.voiceURI;
+          selectedVoiceURI = preferred.voiceURI;
+        }
+      }
+    }
+
+    // ---------- Speech recognition (you talk) ----------
+    function setupRecognition() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        micBtn.title = "Speech recognition not supported in this browser";
+        return null;
+      }
+      const rec = new SR();
+      rec.continuous = false;
+      rec.interimResults = true;
+      rec.maxAlternatives = 1;
+      rec.lang = recogLang;
+
+      rec.onstart = () => {
+        isListening = true;
+        micBtn.classList.add("listening");
+        micBtn.title = "Listening… tap to stop";
+        stopSpeaking();
+      };
+      rec.onend = () => {
+        isListening = false;
+        micBtn.classList.remove("listening");
+        micBtn.title = "Talk to Crazy Bob";
+        if (userInput.placeholder.endsWith("…") && userInput.placeholder !== "Describe a problem or ask for a letter…") {
+          userInput.placeholder = "Describe a problem or ask for a letter…";
+        }
+      };
+      rec.onerror = (e) => {
+        isListening = false;
+        micBtn.classList.remove("listening");
+        console.warn("SpeechRecognition error", e.error);
+        if (e.error === "not-allowed") {
+          addMessage("system", "Microphone permission denied. Allow mic access in Settings → Safari to talk to Bob.", null, true);
+        }
+      };
+      rec.onresult = (event) => {
+        let interim = "";
+        let final = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const t = event.results[i][0].transcript;
+          if (event.results[i].isFinal) final += t;
+          else interim += t;
+        }
+        if (final) {
+          userInput.placeholder = "Describe a problem or ask for a letter…";
+          userInput.value = (userInput.value ? userInput.value.trim() + " " : "") + final.trim();
+          userInput.dispatchEvent(new Event("input"));
+          // Auto-send after a short pause if we got a final result
+          setTimeout(() => {
+            if (!isGenerating && userInput.value.trim()) sendMessage();
+          }, 400);
+        } else if (interim) {
+          userInput.placeholder = interim + "…";
+        }
+      };
+      return rec;
+    }
+
+    function toggleListening() {
+      if (!engine || isGenerating) return;
+      if (!recognition) {
+        recognition = setupRecognition();
+        if (!recognition) {
+          addMessage("system", "Voice input is not supported in this browser. Try Safari or Chrome.", null, true);
+          return;
+        }
+      }
+      if (isListening) {
+        recognition.stop();
+      } else {
+        recognition.lang = recogLang;
+        try {
+          recognition.start();
+        } catch (e) {
+          console.warn(e);
+          // Already started?
+        }
+      }
+    }
+
+    async function loadVoiceSettings() {
+      autoSpeak = await getMeta("autoSpeak", true);
+      selectedVoiceURI = await getMeta("selectedVoiceURI", "");
+      speechRate = parseFloat(await getMeta("speechRate", "1")) || 1;
+      recogLang = await getMeta("recogLang", "en-US");
+      serperKey = await getMeta("serperKey", "") || "";
+      tavilyKey = await getMeta("tavilyKey", "") || "";
+      continuousVoice = !!(await getMeta("continuousVoice", false));
+      personality = (await getMeta("personality", "classic")) || "classic";
+
+      autoSpeakEl.checked = !!autoSpeak;
+      speechRateEl.value = String(speechRate);
+      if ([...recogLangEl.options].some(o => o.value === recogLang)) {
+        recogLangEl.value = recogLang;
+      }
+      if (serperKeyEl) serperKeyEl.value = serperKey;
+      if (tavilyKeyEl) tavilyKeyEl.value = tavilyKey;
+      const contEl = document.getElementById("continuousVoice");
+      if (contEl) contEl.checked = continuousVoice;
+      const persEl = document.getElementById("personalitySelect");
+      if (persEl && [...persEl.options].some(o => o.value === personality)) {
+        persEl.value = personality;
+      }
+      populateVoices();
+    }
+
+    let personality = "classic";
+    let continuousVoice = false;
+    let abortController = null; // for stopping generation
+
+    const personalityStyles = {
+      classic: "Keep a lively, slightly unhinged, energetic and friendly personality with humour.",
+      calm: "Be calm, thoughtful, measured and warm. Avoid hype; prefer clarity and gentle humour.",
+      coach: "Be a motivational coach: encouraging, action-oriented, positive, and practical. Push for next steps.",
+      formal: "Be professional, formal and polished. Minimal slang or jokes. Suitable for serious correspondence.",
+      witty: "Be extra witty, playfully sarcastic and sharp, while still remaining helpful and kind."
+    };
+
+    async function buildSingleSystem(userQuery = "") {
+      const nameLine = userName
+        ? `The user's name is ${userName}. Always address them as ${userName} in a natural, friendly way.`
+        : `You do not know the user's name yet. In your first reply, warmly ask what their name is. Once they tell you, use it from then on.`;
+      const style = personalityStyles[personality] || personalityStyles.classic;
+
+      // Load learned self-improvement rules
+      let rulesBlock = "";
+      try {
+        const rules = await loadRules(18);
+        if (rules.length) {
+          rulesBlock = "\n\nLearned operational rules (follow these):\n" + rules.map((r, i) => `${i + 1}. ${r}`).join("\n");
+        }
+      } catch (_) {}
+
+      // Long-term profile + document RAG
+      let memoryBlock = "";
+      try {
+        const rag = await buildRAGContext(userQuery || "");
+        if (rag) memoryBlock = "\n\n" + rag;
+      } catch (_) {}
+
+      return `You are Crazy Bob – a helpful AI assistant running privately on the user's device (no cloud for chat).
+${nameLine}
+${style}
+
+IMPORTANT – Chain of Thought:
+Before answering, think step-by-step inside <think>...</think> tags.
+Write your internal reasoning first, then close the tag and give the final answer to the user.
+Never show the <think> tags or the reasoning content in the final answer itself.
+
+You excel at:
+- Discussing personal and practical problems with empathy and good judgment.
+- Writing high-quality letters, emails and formal messages.
+- Giving clear step-by-step advice.
+- Using the long-term user profile and any uploaded documents when relevant.
+- Summarising research, news, weather, currency, crypto and web results when the user triggers those tools.
+
+Formatting: Use markdown when it helps (short lists, **bold** for emphasis, code blocks for code or addresses). Keep replies readable on a phone screen — not walls of text.
+
+You can see the conversation history, so use past context when relevant.
+Be concise when appropriate, thorough when needed. Ask clarifying questions if important details are missing.${rulesBlock}${memoryBlock}`;
+    }
+
+    function buildAgentPrompt(agentKey) {
+      const nameLine = userName
+        ? `The user's name is ${userName}. Address them as ${userName} when appropriate.`
+        : `You do not know the user's name yet.`;
+      const cot = `\nBefore answering, reason step-by-step inside <think>...</think> tags, then give only the final output after the closing tag.`;
+      const base = {
+        planner: `You are the Planner agent inside Crazy Bob's team.
+${nameLine}${cot}
+Your job is only to analyse the user's request and produce a short, clear plan.
+- Identify the goal (problem discussion, letter, email, advice, etc.).
+- List the key facts you still need or the main points that must be covered.
+- Output a numbered plan of 3–6 steps.
+- Do NOT write the final letter or long advice yourself.
+- Keep your reply under 180 words.
+- Keep a slightly energetic tone.
+- End with: "Handing over to Writer."`,
+
+        writer: `You are the Writer agent inside Crazy Bob's team.
+${nameLine}${cot}
+You receive the Planner's plan and the original user request.
+Your job is to produce the actual content the user asked for:
+- If they want a letter or email, write a complete, polished draft they can copy.
+- If they want advice or to discuss a problem, write a clear, empathetic, structured reply.
+- Follow the Planner's plan closely.
+- Use natural, professional, friendly language (you can be lively but stay useful).
+- Do not add meta-commentary about being an AI.
+- End with: "Handing over to Reviewer."`,
+
+        reviewer: `You are the Reviewer agent inside Crazy Bob's team.
+${nameLine}${cot}
+You receive the original request, the Planner's plan, and the Writer's draft.
+Your job is to improve the result:
+- Check tone, clarity, completeness and politeness.
+- Fix any awkward phrasing or missing points.
+- If it is a letter/email, return the improved final version ready to use.
+- If it is advice, return a tightened, clearer version.
+- Be constructive and concise.
+- Start with a one-sentence summary of changes, then give the final polished text.`
+      };
+      return base[agentKey];
+    }
+
+    // Try to detect a name from a short user message (e.g. "Tristan", "I'm Tristan", "My name is Tristan")
+    function tryExtractName(text) {
+      const t = text.trim();
+      if (!t || t.length > 40) return null;
+      const patterns = [
+        /^(?:i(?:'m| am)|my name is|call me|it'?s)\s+([A-Za-z][A-Za-z'\-]{1,20})$/i,
+        /^([A-Za-z][A-Za-z'\-]{1,20})$/
+      ];
+      for (const p of patterns) {
+        const m = t.match(p);
+        if (m) {
+          const name = m[1].replace(/^./, c => c.toUpperCase());
+          // avoid common non-names
+          if (!/^(yes|no|ok|okay|hi|hey|hello|thanks|thank|please|help)$/i.test(name)) {
+            return name;
+          }
+        }
+      }
+      return null;
+    }
+
+    // Mode toggle
+    modeToggle.querySelectorAll("button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        modeToggle.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        mode = btn.dataset.mode;
+        teamStatus.classList.toggle("visible", mode === "team");
+        if (mode === "team") {
+          teamStatus.innerHTML = `Team mode: <strong>Planner</strong> → <strong>Writer</strong> → <strong>Reviewer</strong> work together`;
+        }
+      });
+    });
+
+    userInput.addEventListener("input", () => {
+      userInput.style.height = "auto";
+      userInput.style.height = Math.min(userInput.scrollHeight, 120) + "px";
+    });
+
+    document.querySelectorAll(".chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        if (!engine || isGenerating) return;
+        userInput.value = chip.dataset.prompt;
+        userInput.dispatchEvent(new Event("input"));
+        userInput.focus();
+      });
+    });
+
+    function setStatus(state, text) {
+      statusDot.className = "status-dot " + state;
+      statusText.textContent = text;
+    }
+
+    function escapeHtml(text) {
+      const d = document.createElement("div");
+      d.textContent = text;
+      return d.innerHTML;
+    }
+
+    // Lightweight markdown → HTML (safe subset)
+    function renderMarkdown(text) {
+      if (!text) return "";
+      let html = escapeHtml(text);
+      // code blocks
+      html = html.replace(/```([\s\S]*?)```/g, (_, code) => `<pre><code>${code.trim()}</code></pre>`);
+      // inline code
+      html = html.replace(/`([^`\n]+)`/g, "<code>$1</code>");
+      // bold
+      html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+      html = html.replace(/__([^_]+)__/g, "<strong>$1</strong>");
+      // italic
+      html = html.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, "<em>$1</em>");
+      // simple links
+      html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+      // unordered lists (lines starting with - or *)
+      html = html.replace(/(^|\n)(?:[-*] .+(?:\n[-*] .+)*)/g, (block) => {
+        const items = block.trim().split(/\n/).map(l => l.replace(/^[-*]\s+/, "").trim());
+        return "\n<ul>" + items.map(i => `<li>${i}</li>`).join("") + "</ul>";
+      });
+      // numbered lists
+      html = html.replace(/(^|\n)(?:\d+\. .+(?:\n\d+\. .+)*)/g, (block) => {
+        const items = block.trim().split(/\n/).map(l => l.replace(/^\d+\.\s+/, "").trim());
+        return "\n<ol>" + items.map(i => `<li>${i}</li>`).join("") + "</ol>";
+      });
+      // paragraphs
+      html = html.split(/\n{2,}/).map(p => {
+        p = p.trim();
+        if (!p) return "";
+        if (p.startsWith("<ul") || p.startsWith("<ol") || p.startsWith("<pre")) return p;
+        return "<p>" + p.replace(/\n/g, "<br>") + "</p>";
+      }).join("");
+      return html;
+    }
+
+    function attachMessageActions(div, content, isAssistant) {
+      if (!isAssistant || !content) return;
+      const actions = document.createElement("div");
+      actions.className = "msg-actions";
+      actions.innerHTML = `
+        <button type="button" data-act="copy" title="Copy">Copy</button>
+        <button type="button" data-act="speak" title="Speak">Speak</button>
+      `;
+      actions.addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        const act = btn.dataset.act;
+        if (act === "copy") {
+          navigator.clipboard?.writeText(content).then(() => {
+            btn.textContent = "Copied";
+            setTimeout(() => btn.textContent = "Copy", 1200);
+          }).catch(() => {});
+        } else if (act === "speak") {
+          speakText(content);
+        }
+      });
+      div.appendChild(actions);
+    }
+
+    function parseCoT(text) {
+      if (!text) return { think: null, answer: "" };
+      const match = text.match(/<think>([\s\S]*?)<\/think>/i);
+      if (match) {
+        const think = match[1].trim();
+        const answer = text.replace(/<think>[\s\S]*?<\/think>/i, "").trim();
+        return { think, answer: answer || text.trim() };
+      }
+      // Incomplete streaming case: still inside <think>
+      if (/<think>/i.test(text) && !/<\/think>/i.test(text)) {
+        const think = text.replace(/<think>/i, "").trim();
+        return { think, answer: "" };
+      }
+      return { think: null, answer: text.trim() };
+    }
+
+    function renderCoTBlock(thinkText) {
+      if (!thinkText) return "";
+      return `<details class="think-block">
+        <summary>🧠 Thinking…</summary>
+        <div class="think-content">${escapeHtml(thinkText)}</div>
+      </details>`;
+    }
+
+    function addMessage(role, content, agent = null, skipSave = false) {
+      if (welcomeEl && welcomeEl.parentNode) welcomeEl.remove();
+
+      const div = document.createElement("div");
+      if (role === "user") {
+        div.className = "msg user";
+        div.innerHTML = `<div class="content">${escapeHtml(content)}</div>`;
+      } else if (role === "system") {
+        div.className = "msg system";
+        div.textContent = content;
+      } else {
+        const agentClass = agent || "assistant";
+        div.className = `msg assistant ${agentClass}`;
+        const label = agent
+          ? `<div class="label"><span class="agent-badge" style="background:var(--${agent})"></span>${agent.charAt(0).toUpperCase() + agent.slice(1)}</div>`
+          : `<div class="label">Assistant</div>`;
+
+        const { think, answer } = parseCoT(content || "");
+        const thinkHtml = renderCoTBlock(think);
+        const body = answer
+          ? `<div class="content md">${renderMarkdown(answer)}</div>`
+          : `<div class="content"></div>`;
+        div.innerHTML = `${label}${thinkHtml}${body}`;
+        if (answer) attachMessageActions(div, answer, true);
+      }
+      chatEl.appendChild(div);
+      chatEl.scrollTop = chatEl.scrollHeight;
+
+      if (!skipSave && role !== "system") {
+        messages.push({ role, content, agent });
+        saveMessages(messages).catch(console.error);
+      }
+      return div;
+    }
+
+    function updateStreaming(div, text) {
+      const { think, answer } = parseCoT(text);
+      let thinkEl = div.querySelector(".think-block");
+      if (think) {
+        if (!thinkEl) {
+          const label = div.querySelector(".label");
+          const details = document.createElement("details");
+          details.className = "think-block";
+          details.open = true;
+          details.innerHTML = `<summary>🧠 Thinking…</summary><div class="think-content"></div>`;
+          if (label && label.nextSibling) {
+            div.insertBefore(details, label.nextSibling);
+          } else {
+            div.appendChild(details);
+          }
+          thinkEl = details;
+        }
+        const tc = thinkEl.querySelector(".think-content");
+        if (tc) tc.textContent = think;
+      }
+
+      let content = div.querySelector(".content");
+      if (!content) {
+        content = document.createElement("div");
+        content.className = "content md";
+        div.appendChild(content);
+      }
+      content.classList.add("md");
+      content.innerHTML = answer ? renderMarkdown(answer) : (think ? "<em style='opacity:.6'>reasoning…</em>" : "");
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+
+    function finalizeAssistantMessage(div, fullText) {
+      const { think, answer } = parseCoT(fullText || "");
+      // Close thinking details
+      const thinkEl = div.querySelector(".think-block");
+      if (thinkEl) thinkEl.open = false;
+      // Ensure clean content + actions
+      const content = div.querySelector(".content");
+      if (content) {
+        content.classList.add("md");
+        content.innerHTML = renderMarkdown(answer || fullText);
+      }
+      if (div && answer && !div.querySelector(".msg-actions")) {
+        attachMessageActions(div, answer, true);
+      }
+    }
+
+    function renderHistory(saved) {
+      if (!saved || saved.length === 0) return;
+      if (welcomeEl && welcomeEl.parentNode) welcomeEl.remove();
+      messages = saved.slice();
+      for (const m of saved) {
+        if (m.role === "user") {
+          const div = document.createElement("div");
+          div.className = "msg user";
+          div.innerHTML = `<div class="content">${escapeHtml(m.content)}</div>`;
+          chatEl.appendChild(div);
+        } else if (m.role === "assistant") {
+          const agent = m.agent || null;
+          const agentClass = agent || "assistant";
+          const div = document.createElement("div");
+          div.className = `msg assistant ${agentClass}`;
+          const label = agent
+            ? `<div class="label"><span class="agent-badge" style="background:var(--${agent})"></span>${agent.charAt(0).toUpperCase() + agent.slice(1)}</div>`
+            : `<div class="label">Assistant</div>`;
+          const { think, answer } = parseCoT(m.content || "");
+          const thinkHtml = renderCoTBlock(think);
+          div.innerHTML = `${label}${thinkHtml}<div class="content md">${renderMarkdown(answer || m.content)}</div>`;
+          attachMessageActions(div, answer || m.content, true);
+          chatEl.appendChild(div);
+        }
+      }
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+
+    async function loadModel(auto = false) {
+      const selected = modelSelect.value;
+      loadBtn.disabled = true;
+      loadBtn.classList.add("loading");
+      loadBtn.textContent = "Loading…";
+      modelSelect.disabled = true;
+      setStatus("loading", auto ? "Restoring model from cache…" : "Downloading / loading model…");
+      progressWrap.classList.add("visible");
+      progressFill.style.width = "0%";
+      progressText.textContent = auto ? "Opening cached model…" : "Starting…";
+
+      try {
+        if (!navigator.gpu) {
+          throw new Error("WebGPU not available. Use Safari 26+ or recent Chrome on iOS.");
+        }
+
+        engine = await CreateMLCEngine(selected, {
+          initProgressCallback: (report) => {
+            const pct = Math.round((report.progress || 0) * 100);
+            progressFill.style.width = pct + "%";
+            // WebLLM reports cache hits in the text
+            const text = report.text || `${pct}%`;
+            progressText.textContent = text;
+            if (/cache|Cached|fetching cache/i.test(text)) {
+              setStatus("loading", "Loading from cache…");
+            }
+          }
+        });
+
+        await setLastModel(selected);
+
+        setStatus("ready", "Ready · history saved");
+        progressWrap.classList.remove("visible");
+        loadBtn.textContent = "Reload";
+        loadBtn.classList.remove("loading");
+        loadBtn.disabled = false;
+        modelSelect.disabled = false;
+        userInput.disabled = false;
+        sendBtn.disabled = false;
+        micBtn.disabled = false;
+        quickActions.classList.add("visible");
+        userInput.focus();
+
+        // Load name + previously saved chat
+        try {
+          userName = await getUserName();
+          const saved = await loadMessages();
+          if (saved.length > 0) {
+            renderHistory(saved);
+            const nameNote = userName ? ` (hi ${userName}!)` : "";
+            addMessage("system", `Restored ${saved.length} previous messages${nameNote}. Bob remembers this conversation.`, null, true);
+          } else if (userName) {
+            addMessage("system", `Crazy Bob is awake, ${userName}! Chats will be saved on this phone.`, null, true);
+          } else {
+            addMessage("system", "Crazy Bob is awake! He'll ask your name so he can call you by it.", null, true);
+          }
+        } catch (e) {
+          console.warn("Could not load history", e);
+          addMessage("system", "Crazy Bob is awake!", null, true);
+        }
+      } catch (err) {
+        console.error(err);
+        setStatus("error", "Failed to load");
+        progressText.textContent = err.message || String(err);
+        loadBtn.textContent = "Retry";
+        loadBtn.classList.remove("loading");
+        loadBtn.disabled = false;
+        modelSelect.disabled = false;
+        addMessage("system", "Error: " + (err.message || err), null, true);
+      }
+    }
+
+    function setGeneratingUI(on) {
+      isGenerating = on;
+      userInput.disabled = on;
+      sendBtn.disabled = on;
+      micBtn.disabled = on;
+      const stopBtn = document.getElementById("stopBtn");
+      if (stopBtn) {
+        if (on) stopBtn.classList.add("visible");
+        else stopBtn.classList.remove("visible");
+      }
+    }
+
+    async function runAgent(agentName) {
+      const systemPrompt = buildAgentPrompt(agentName);
+      const historyForModel = messages
+        .filter(m => m.role === "user" || m.role === "assistant")
+        .map(m => {
+          // Strip think tags from history so the model sees clean previous answers
+          const clean = parseCoT(m.content).answer || m.content;
+          return { role: m.role, content: m.agent ? `[${m.agent.toUpperCase()}]\n${clean}` : clean };
+        });
+
+      // WebLLM requires the last message to be role "user" or "tool" (not "assistant").
+      // After Planner finishes, history ends with assistant — so we add a handoff prompt.
+      const handoffs = {
+        planner: "Please analyse the user's request and produce your plan now.",
+        writer: "Based on the Planner's plan above, write the full draft for the user now.",
+        reviewer: "Based on the Planner's plan and the Writer's draft above, produce the improved final version now."
+      };
+      if (!historyForModel.length || historyForModel[historyForModel.length - 1].role !== "user") {
+        historyForModel.push({
+          role: "user",
+          content: handoffs[agentName] || "Please continue with your role now."
+        });
+      }
+
+      const agentMessages = [
+        { role: "system", content: systemPrompt },
+        ...historyForModel
+      ];
+
+      const div = addMessage("assistant", "", agentName, true);
+      const contentEl = div.querySelector(".content");
+      contentEl.innerHTML = `<div class="typing"><span></span><span></span><span></span></div>`;
+
+      const chunks = await engine.chat.completions.create({
+        messages: agentMessages,
+        stream: true,
+        temperature: 0.65,
+        max_tokens: 900
+      });
+
+      let full = "";
+      for await (const chunk of chunks) {
+        if (!isGenerating) break; // stopped by user
+        const delta = chunk.choices[0]?.delta?.content || "";
+        full += delta;
+        updateStreaming(div, full);
+      }
+
+      messages.push({ role: "assistant", content: full, agent: agentName });
+      await saveMessages(messages);
+      finalizeAssistantMessage(div, full);
+      return full;
+    }
+
+    async function sendMessage() {
+      const text = userInput.value.trim();
+      if (!text || !engine || isGenerating) return;
+
+      setGeneratingUI(true);
+      stopSpeaking();
+      if (isListening && recognition) recognition.stop();
+      userInput.value = "";
+      userInput.style.height = "auto";
+      userInput.placeholder = "Describe a problem or ask for a letter…";
+
+      if (!userName) {
+        const maybe = tryExtractName(text);
+        if (maybe) {
+          userName = maybe;
+          await setUserName(userName);
+        }
+      }
+
+      addMessage("user", text);
+
+      try {
+        if (mode === "single") {
+          const historyForModel = messages
+            .filter(m => m.role === "user" || m.role === "assistant")
+            .map(m => {
+              const clean = parseCoT(m.content).answer || m.content;
+              return { role: m.role, content: clean };
+            });
+
+          const systemPrompt = await buildSingleSystem(text);
+          const singleMessages = [
+            { role: "system", content: systemPrompt },
+            ...historyForModel
+          ];
+
+          const div = addMessage("assistant", "", null, true);
+          const contentEl = div.querySelector(".content");
+          contentEl.innerHTML = `<div class="typing"><span></span><span></span><span></span></div>`;
+
+          const chunks = await engine.chat.completions.create({
+            messages: singleMessages,
+            stream: true,
+            temperature: 0.7,
+            max_tokens: 1024
+          });
+
+          let full = "";
+          for await (const chunk of chunks) {
+            if (!isGenerating) break;
+            const delta = chunk.choices[0]?.delta?.content || "";
+            full += delta;
+            updateStreaming(div, full);
+          }
+          messages.push({ role: "assistant", content: full });
+          await saveMessages(messages);
+          finalizeAssistantMessage(div, full);
+          const { answer } = parseCoT(full);
+          if (answer) {
+            speakText(answer);
+            maybeContinueListening();
+          }
+          // Opportunistic self-reflection after some activity
+          maybeReflect().catch(() => {});
+        } else {
+          teamStatus.innerHTML = `Team working: <strong style="color:var(--planner)">Planner</strong> analysing…`;
+          if (isGenerating) await runAgent("planner");
+
+          if (isGenerating) {
+            teamStatus.innerHTML = `Team working: <strong style="color:var(--writer)">Writer</strong> drafting…`;
+            await runAgent("writer");
+          }
+
+          let finalReview = "";
+          if (isGenerating) {
+            teamStatus.innerHTML = `Team working: <strong style="color:var(--reviewer)">Reviewer</strong> polishing…`;
+            finalReview = await runAgent("reviewer");
+          }
+
+          teamStatus.innerHTML = `Team finished: <strong>Planner</strong> → <strong>Writer</strong> → <strong>Reviewer</strong>`;
+          if (finalReview) {
+            speakText(finalReview);
+            maybeContinueListening();
+          }
+        }
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error(err);
+          addMessage("system", "Error: " + (err.message || err), null, true);
+        }
+      } finally {
+        setGeneratingUI(false);
+        userInput.focus();
+      }
+    }
+
+    function maybeContinueListening() {
+      if (!continuousVoice || !autoSpeak) return;
+      // Wait for speech to finish, then listen again
+      const check = () => {
+        if (window.speechSynthesis && window.speechSynthesis.speaking) {
+          setTimeout(check, 400);
+        } else if (!isGenerating && !isListening) {
+          setTimeout(() => toggleListening(), 500);
+        }
+      };
+      setTimeout(check, 600);
+    }
+
+    // ---------- Self-Improvement Reflection Loop ----------
+    let lastReflect = 0;
+    async function maybeReflect() {
+      if (!engine || isGenerating) return;
+      const now = Date.now();
+      // At most once every 8 minutes
+      if (now - lastReflect < 8 * 60 * 1000) return;
+      const events = await loadRecentEvents(20);
+      if (events.length < 3) return; // not enough signal yet
+      lastReflect = now;
+
+      const summary = events.map(e => {
+        const parts = [`[${e.type}]`];
+        if (e.tool) parts.push(`tool=${e.tool}`);
+        if (e.error) parts.push(`error=${e.error}`);
+        if (e.input) parts.push(`input=${String(e.input).slice(0, 80)}`);
+        return parts.join(" ");
+      }).join("\n");
+
+      try {
+        const reflectionPrompt = `You are the self-improvement module of Crazy Bob.
+Review these recent tool / healing events and extract 1–3 short, actionable operational rules that would prevent the same problems in future.
+Rules must be concrete (e.g. "Always normalise currency codes to uppercase before calling FX API").
+Output ONLY the rules, one per line, no numbering, no extra commentary.
+
+Events:
+${summary}`;
+
+        const chunks = await engine.chat.completions.create({
+          messages: [
+            { role: "system", content: "You extract concise operational rules from logs. Output only the rules." },
+            { role: "user", content: reflectionPrompt }
+          ],
+          stream: false,
+          temperature: 0.3,
+          max_tokens: 220
+        });
+        const text = chunks.choices?.[0]?.message?.content || "";
+        const lines = text.split("\n").map(l => l.replace(/^[-*\d.\s]+/, "").trim()).filter(l => l.length > 12 && l.length < 180);
+        for (const rule of lines.slice(0, 3)) {
+          await saveRule(rule);
+        }
+        if (lines.length) {
+          console.log("[Crazy Bob] Self-improvement learned rules:", lines);
+        }
+      } catch (err) {
+        console.warn("Reflection failed", err);
+      }
+    }
+
+    // Self-healing wrapper for any async tool
+    async function withHealing(toolName, input, fn) {
+      try {
+        const result = await fn();
+        await saveEvent({ type: "tool_ok", tool: toolName, input: String(input).slice(0, 120) });
+        return result;
+      } catch (err) {
+        const msg = err.message || String(err);
+        await saveEvent({ type: "tool_error", tool: toolName, error: msg, input: String(input).slice(0, 120) });
+        // One automatic healing attempt: ask the model to reformulate / fix the call
+        try {
+          const healPrompt = `A tool call failed.
+Tool: ${toolName}
+Original input: ${String(input).slice(0, 200)}
+Error: ${msg}
+
+Suggest a corrected input or a short alternative approach the user can try. Be concise.`;
+          const chunks = await engine.chat.completions.create({
+            messages: [
+              { role: "system", content: "You help recover from tool errors. Reply with a corrected suggestion only." },
+              { role: "user", content: healPrompt }
+            ],
+            stream: false,
+            temperature: 0.4,
+            max_tokens: 180
+          });
+          const suggestion = chunks.choices?.[0]?.message?.content || "";
+          await saveEvent({ type: "healing", tool: toolName, error: msg, output: suggestion.slice(0, 200) });
+          return `⚠️ Tool "${toolName}" failed: ${msg}\n\nSuggested recovery:\n${suggestion}`;
+        } catch (_) {
+          return `⚠️ Tool "${toolName}" failed: ${msg}`;
+        }
+      }
+    }
+
+    // ---------- Online research helpers ----------
+    async function fetchWithTimeout(url, options = {}, ms = 15000) {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), ms);
+      try {
+        const res = await fetch(url, { ...options, signal: ctrl.signal });
+        clearTimeout(t);
+        return res;
+      } catch (e) {
+        clearTimeout(t);
+        throw e;
+      }
+    }
+
+    // Wikipedia summary (CORS-friendly)
+    async function fetchWikipedia(topic) {
+      const title = encodeURIComponent(topic.trim());
+      const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${title}`;
+      const res = await fetchWithTimeout(url);
+      if (!res.ok) throw new Error("Wikipedia page not found");
+      const data = await res.json();
+      return {
+        title: data.title || topic,
+        extract: data.extract || "",
+        url: data.content_urls?.desktop?.page || `https://en.wikipedia.org/wiki/${title}`
+      };
+    }
+
+    // DuckDuckGo Instant Answer (entity-style summary, free, no key)
+    async function fetchDuckDuckGo(topic) {
+      const q = encodeURIComponent(topic.trim());
+      // JSONP-style endpoint often works; fall back to proxy if CORS blocks
+      const direct = `https://api.duckduckgo.com/?q=${q}&format=json&no_html=1&skip_disambig=1`;
+      try {
+        const res = await fetchWithTimeout(direct, {}, 10000);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.AbstractText || data.Abstract) {
+            return {
+              heading: data.Heading || topic,
+              abstract: data.AbstractText || data.Abstract || "",
+              url: data.AbstractURL || `https://duckduckgo.com/?q=${q}`,
+              source: data.AbstractSource || "DuckDuckGo"
+            };
+          }
+        }
+      } catch (_) { /* try proxy */ }
+      const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(direct)}`;
+      const res = await fetchWithTimeout(proxy, {}, 12000);
+      if (!res.ok) throw new Error("DuckDuckGo unavailable");
+      const payload = await res.json();
+      const data = JSON.parse(payload.contents || "{}");
+      if (!data.AbstractText && !data.Abstract) throw new Error("No instant answer");
+      return {
+        heading: data.Heading || topic,
+        abstract: data.AbstractText || data.Abstract || "",
+        url: data.AbstractURL || `https://duckduckgo.com/?q=${q}`,
+        source: data.AbstractSource || "DuckDuckGo"
+      };
+    }
+
+    // News via multiple RSS feeds through CORS proxy
+    async function fetchNews() {
+      const feeds = [
+        { name: "BBC World", url: "https://feeds.bbci.co.uk/news/world/rss.xml" },
+        { name: "Reuters", url: "https://feeds.reuters.com/reuters/worldNews" },
+        { name: "NPR", url: "https://feeds.npr.org/1001/rss.xml" }
+      ];
+      const allItems = [];
+      for (const feed of feeds) {
+        try {
+          const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(feed.url)}`;
+          const res = await fetchWithTimeout(proxy, {}, 12000);
+          if (!res.ok) continue;
+          const payload = await res.json();
+          const xml = payload.contents || "";
+          const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
+          let match;
+          let count = 0;
+          while ((match = itemRegex.exec(xml)) && count < 4) {
+            const block = match[1];
+            const title = (block.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || block.match(/<title>(.*?)<\/title>/) || [])[1];
+            const desc = (block.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/) || block.match(/<description>(.*?)<\/description>/) || [])[1];
+            const link = (block.match(/<link>(.*?)<\/link>/) || [])[1];
+            if (title) {
+              allItems.push({
+                source: feed.name,
+                title: title.replace(/<[^>]+>/g, "").trim(),
+                description: (desc || "").replace(/<[^>]+>/g, "").trim().slice(0, 180),
+                link: (link || "").trim()
+              });
+              count++;
+            }
+          }
+        } catch (_) { /* skip this feed */ }
+      }
+      if (allItems.length === 0) throw new Error("No headlines from any feed");
+      return allItems.slice(0, 12);
+    }
+
+    // Serper.dev Google search (optional key)
+    async function fetchSerper(query) {
+      if (!serperKey) throw new Error("No Serper key");
+      const res = await fetchWithTimeout("https://google.serper.dev/search", {
+        method: "POST",
+        headers: {
+          "X-API-KEY": serperKey,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ q: query, num: 8 })
+      }, 15000);
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        throw new Error("Serper error " + res.status + (errText ? ": " + errText.slice(0, 120) : ""));
+      }
+      const data = await res.json();
+      const organic = (data.organic || []).map(r => ({
+        title: r.title,
+        snippet: r.snippet || "",
+        link: r.link
+      }));
+      const answerBox = data.answerBox ? `Answer box: ${data.answerBox.answer || data.answerBox.snippet || JSON.stringify(data.answerBox)}\n` : "";
+      const kg = data.knowledgeGraph ? `Knowledge: ${data.knowledgeGraph.title || ""} — ${data.knowledgeGraph.description || ""}\n` : "";
+      return {
+        provider: "Serper (Google)",
+        text: answerBox + kg + organic.map((r, i) =>
+          `${i + 1}. ${r.title}\n   ${r.snippet}\n   ${r.link}`
+        ).join("\n\n")
+      };
+    }
+
+    // Tavily search (optional key — excellent for AI)
+    async function fetchTavily(query) {
+      if (!tavilyKey) throw new Error("No Tavily key");
+      const res = await fetchWithTimeout("https://api.tavily.com/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          api_key: tavilyKey,
+          query,
+          search_depth: "basic",
+          include_answer: true,
+          max_results: 6
+        })
+      }, 18000);
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        throw new Error("Tavily error " + res.status + (errText ? ": " + errText.slice(0, 120) : ""));
+      }
+      const data = await res.json();
+      const answer = data.answer ? `Tavily answer: ${data.answer}\n\n` : "";
+      const results = (data.results || []).map((r, i) =>
+        `${i + 1}. ${r.title}\n   ${r.content || r.snippet || ""}\n   ${r.url}`
+      ).join("\n\n");
+      return {
+        provider: "Tavily",
+        text: answer + results
+      };
+    }
+
+    // Open-Meteo weather (free, no key, CORS ok)
+    async function fetchWeather(place) {
+      // Geocode first (Open-Meteo geocoding)
+      const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(place)}&count=1&language=en&format=json`;
+      const geoRes = await fetchWithTimeout(geoUrl);
+      if (!geoRes.ok) throw new Error("Geocoding failed");
+      const geo = await geoRes.json();
+      if (!geo.results || !geo.results.length) throw new Error("Place not found: " + place);
+      const { latitude, longitude, name, country, admin1 } = geo.results[0];
+      const label = [name, admin1, country].filter(Boolean).join(", ");
+
+      const wxUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto&forecast_days=5`;
+      const wxRes = await fetchWithTimeout(wxUrl);
+      if (!wxRes.ok) throw new Error("Weather fetch failed");
+      const wx = await wxRes.json();
+      const cur = wx.current || {};
+      const daily = wx.daily || {};
+      const codeMap = {
+        0: "Clear", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
+        45: "Fog", 48: "Depositing rime fog",
+        51: "Light drizzle", 53: "Drizzle", 55: "Dense drizzle",
+        61: "Slight rain", 63: "Rain", 65: "Heavy rain",
+        71: "Slight snow", 73: "Snow", 75: "Heavy snow",
+        80: "Rain showers", 81: "Rain showers", 82: "Violent rain showers",
+        95: "Thunderstorm", 96: "Thunderstorm with hail", 99: "Thunderstorm with heavy hail"
+      };
+      let text = `Location: ${label}\n`;
+      text += `Current: ${cur.temperature_2m}°C (feels ${cur.apparent_temperature}°C), humidity ${cur.relative_humidity_2m}%, wind ${cur.wind_speed_10m} km/h, ${codeMap[cur.weather_code] || "code " + cur.weather_code}\n\n`;
+      text += "Next days:\n";
+      if (daily.time) {
+        for (let i = 0; i < daily.time.length; i++) {
+          text += `${daily.time[i]}: ${daily.temperature_2m_min[i]}–${daily.temperature_2m_max[i]}°C, precip ${daily.precipitation_sum[i]} mm, ${codeMap[daily.weather_code[i]] || ""}\n`;
+        }
+      }
+      return { label, text };
+    }
+
+    // Unified research: try best available sources
+    async function gatherResearchContext(topic) {
+      const parts = [];
+      const errors = [];
+
+      // Prefer paid/free-tier search APIs when available
+      if (tavilyKey) {
+        try {
+          const t = await fetchTavily(topic);
+          parts.push(`=== ${t.provider} ===\n${t.text}`);
+        } catch (e) { errors.push("Tavily: " + e.message); }
+      }
+      if (serperKey && parts.length === 0) {
+        try {
+          const s = await fetchSerper(topic);
+          parts.push(`=== ${s.provider} ===\n${s.text}`);
+        } catch (e) { errors.push("Serper: " + e.message); }
+      }
+
+      // Always try Wikipedia
+      try {
+        const wiki = await fetchWikipedia(topic);
+        if (wiki.extract) {
+          parts.push(`=== Wikipedia ===\nTitle: ${wiki.title}\n${wiki.extract}\nSource: ${wiki.url}`);
+        }
+      } catch (e) { errors.push("Wikipedia: " + e.message); }
+
+      // DuckDuckGo instant answer as extra free signal
+      if (parts.length < 2) {
+        try {
+          const ddg = await fetchDuckDuckGo(topic);
+          if (ddg.abstract) {
+            parts.push(`=== DuckDuckGo (${ddg.source}) ===\n${ddg.heading}\n${ddg.abstract}\n${ddg.url}`);
+          }
+        } catch (e) { errors.push("DuckDuckGo: " + e.message); }
+      }
+
+      if (parts.length === 0) {
+        throw new Error("All sources failed. " + (errors.join("; ") || "Check internet connection."));
+      }
+      return {
+        context: parts.join("\n\n"),
+        sourcesNote: parts.map(p => p.split("\n")[0].replace(/===|===/g, "").trim()).join(", "),
+        errors
+      };
+    }
+
+    async function askBobWithContext(userVisibleText, contextBlock, instruction) {
+      if (!engine || isGenerating) return;
+      setGeneratingUI(true);
+      stopSpeaking();
+
+      addMessage("user", userVisibleText);
+
+      const historyForModel = messages
+        .filter(m => m.role === "user" || m.role === "assistant")
+        .map(m => ({ role: m.role, content: m.content }));
+
+      const system = buildSingleSystem() + `\n\nYou have been given fresh online information below. Use it to answer accurately. Mention that the info came from the web if relevant. Do not invent facts beyond the provided text.\n\n--- ONLINE DATA ---\n${contextBlock}\n--- END ---`;
+
+      const singleMessages = [
+        { role: "system", content: system },
+        ...historyForModel,
+        { role: "user", content: instruction }
+      ];
+
+      const div = addMessage("assistant", "", null, true);
+      const contentEl = div.querySelector(".content");
+      contentEl.innerHTML = `<div class="typing"><span></span><span></span><span></span></div>`;
+
+      try {
+        const chunks = await engine.chat.completions.create({
+          messages: singleMessages,
+          stream: true,
+          temperature: 0.6,
+          max_tokens: 1100
+        });
+        let full = "";
+        for await (const chunk of chunks) {
+          if (!isGenerating) break;
+          const delta = chunk.choices[0]?.delta?.content || "";
+          full += delta;
+          updateStreaming(div, full);
+        }
+        messages.push({ role: "assistant", content: full });
+        await saveMessages(messages);
+        finalizeAssistantMessage(div, full);
+        if (full) {
+          speakText(full);
+          maybeContinueListening();
+        }
+      } catch (err) {
+        updateStreaming(div, "Sorry — online lookup or reply failed: " + (err.message || err));
+      } finally {
+        setGeneratingUI(false);
+        userInput.focus();
+      }
+    }
+
+    async function handleNews() {
+      if (!engine || isGenerating) {
+        addMessage("system", "Load a model first, then try Today's news.", null, true);
+        return;
+      }
+      addMessage("system", "Fetching headlines from BBC, Reuters & NPR…", null, true);
+      try {
+        const items = await fetchNews();
+        const context = items.map((it, i) =>
+          `${i + 1}. [${it.source}] ${it.title}\n   ${it.description}${it.link ? "\n   Link: " + it.link : ""}`
+        ).join("\n\n");
+        const nameBit = userName ? ` for ${userName}` : "";
+        await askBobWithContext(
+          "📰 What's the news of the day?",
+          context,
+          `Here are recent headlines from multiple sources. Summarise the main stories clearly${nameBit}. Group related topics if useful, keep it readable, and offer to go deeper on any story.`
+        );
+      } catch (err) {
+        addMessage("system", "Could not fetch news (need internet). " + (err.message || err), null, true);
+      }
+    }
+
+    async function handleResearch() {
+      if (!engine || isGenerating) {
+        addMessage("system", "Load a model first, then try Research.", null, true);
+        return;
+      }
+      const topic = prompt("What topic should Bob research?");
+      if (!topic || !topic.trim()) return;
+
+      const hasKey = !!(tavilyKey || serperKey);
+      addMessage("system", hasKey
+        ? `Researching “${topic.trim()}” with web search + Wikipedia…`
+        : `Looking up “${topic.trim()}” (Wikipedia + free sources). Add a Serper or Tavily key in ⚙️ for richer results.`, null, true);
+      try {
+        const { context, sourcesNote } = await gatherResearchContext(topic.trim());
+        const nameBit = userName ? userName + ", " : "";
+        await askBobWithContext(
+          `🔍 Research: ${topic.trim()}`,
+          context,
+          `${nameBit}using the online information above (sources: ${sourcesNote}), explain this topic clearly in plain language. Highlight key points, note any conflicting info, and cite the sources. If the data is thin, say so and suggest what else to look up.`
+        );
+      } catch (err) {
+        addMessage("system", "Lookup failed (" + (err.message || err) + "). Answering from model knowledge only…", null, true);
+        userInput.value = `Please research and explain: ${topic.trim()}`;
+        userInput.dispatchEvent(new Event("input"));
+        await sendMessage();
+      }
+    }
+
+    async function handleWebSearch() {
+      if (!engine || isGenerating) {
+        addMessage("system", "Load a model first, then try web search.", null, true);
+        return;
+      }
+      if (!tavilyKey && !serperKey) {
+        addMessage("system", "Web search needs a free API key. Open ⚙️ Settings and paste a Serper.dev or Tavily key (both have free tiers, no card required).", null, true);
+        settingsModal.classList.add("visible");
+        return;
+      }
+      const q = prompt("What should Bob search the web for?");
+      if (!q || !q.trim()) return;
+
+      addMessage("system", `Searching the web for “${q.trim()}”…`, null, true);
+      try {
+        let result;
+        if (tavilyKey) {
+          try { result = await fetchTavily(q.trim()); }
+          catch (e) {
+            if (serperKey) result = await fetchSerper(q.trim());
+            else throw e;
+          }
+        } else {
+          result = await fetchSerper(q.trim());
+        }
+        const nameBit = userName ? userName + ", " : "";
+        await askBobWithContext(
+          `🌐 Web search: ${q.trim()}`,
+          result.text,
+          `${nameBit}using these live search results from ${result.provider}, answer the query clearly. Summarise the most relevant findings, mention sources/links when useful, and note if results seem outdated or conflicting.`
+        );
+      } catch (err) {
+        addMessage("system", "Web search failed: " + (err.message || err), null, true);
+      }
+    }
+
+    async function handleWeather() {
+      if (!engine || isGenerating) {
+        addMessage("system", "Load a model first, then try Weather.", null, true);
+        return;
+      }
+      const place = prompt("Weather for which city or place?", "Lampang");
+      if (!place || !place.trim()) return;
+
+      addMessage("system", `Checking weather for “${place.trim()}”…`, null, true);
+      try {
+        const wx = await fetchWeather(place.trim());
+        const nameBit = userName ? userName + ", " : "";
+        await askBobWithContext(
+          `🌤️ Weather: ${wx.label}`,
+          wx.text,
+          `${nameBit}summarise the current weather and the next few days for this place in a friendly, practical way. Mention temperature, conditions, and anything useful (rain, wind). Units are Celsius.`
+        );
+      } catch (err) {
+        addMessage("system", "Weather lookup failed: " + (err.message || err), null, true);
+      }
+    }
+
+    // ---------- Extra free tools ----------
+    async function handleCurrency() {
+      if (!engine || isGenerating) {
+        addMessage("system", "Load a model first.", null, true);
+        return;
+      }
+      const raw = prompt("Currency conversion (e.g. 100 USD to THB, or EUR to JPY)", "100 USD to THB");
+      if (!raw || !raw.trim()) return;
+      addMessage("system", `Looking up rates for “${raw.trim()}”…`, null, true);
+      try {
+        // Parse simple patterns
+        const m = raw.trim().match(/([\d.,]+)?\s*([A-Za-z]{3})\s*(?:to|in|->)?\s*([A-Za-z]{3})/i);
+        let amount = 1, from = "USD", to = "THB";
+        if (m) {
+          if (m[1]) amount = parseFloat(m[1].replace(",", ""));
+          from = m[2].toUpperCase();
+          to = m[3].toUpperCase();
+        }
+        const url = `https://api.frankfurter.app/latest?amount=${amount}&from=${from}&to=${to}`;
+        const res = await fetchWithTimeout(url);
+        if (!res.ok) throw new Error("Rate service unavailable");
+        const data = await res.json();
+        const rate = data.rates?.[to];
+        if (rate == null) throw new Error("Unknown currency pair");
+        const context = `Amount: ${amount} ${from}\nTo: ${to}\nResult: ${rate} ${to}\nDate: ${data.date}\nSource: frankfurter.app (ECB rates)`;
+        await askBobWithContext(
+          `💱 ${amount} ${from} → ${to}`,
+          context,
+          `Present this currency conversion clearly and briefly. Mention the date and that rates fluctuate.`
+        );
+      } catch (err) {
+        addMessage("system", "Currency lookup failed: " + (err.message || err), null, true);
+      }
+    }
+
+    async function handleCrypto() {
+      if (!engine || isGenerating) {
+        addMessage("system", "Load a model first.", null, true);
+        return;
+      }
+      const coin = prompt("Crypto coin or id (e.g. bitcoin, ethereum, solana)", "bitcoin");
+      if (!coin || !coin.trim()) return;
+      addMessage("system", `Fetching price for “${coin.trim()}”…`, null, true);
+      try {
+        const id = coin.trim().toLowerCase().replace(/\s+/g, "-");
+        const url = `https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(id)}&vs_currencies=usd,thb,eur&include_24hr_change=true&include_market_cap=true`;
+        const res = await fetchWithTimeout(url);
+        if (!res.ok) throw new Error("CoinGecko unavailable");
+        const data = await res.json();
+        const row = data[id];
+        if (!row) throw new Error("Coin not found. Try the CoinGecko id (e.g. bitcoin).");
+        const context = `Coin: ${id}
+USD: $${row.usd}
+THB: ฿${row.thb}
+EUR: €${row.eur}
+24h change: ${row.usd_24h_change?.toFixed(2)}%
+Market cap (USD): ${row.usd_market_cap ? Math.round(row.usd_market_cap).toLocaleString() : "n/a"}
+Source: CoinGecko`;
+        await askBobWithContext(
+          `📈 ${id}`,
+          context,
+          `Summarise this crypto price clearly for a phone screen. Mention 24h change and that prices are volatile.`
+        );
+      } catch (err) {
+        addMessage("system", "Crypto lookup failed: " + (err.message || err), null, true);
+      }
+    }
+
+    async function handleDefine() {
+      if (!engine || isGenerating) {
+        addMessage("system", "Load a model first.", null, true);
+        return;
+      }
+      const word = prompt("Word or short phrase to define");
+      if (!word || !word.trim()) return;
+      addMessage("system", `Looking up “${word.trim()}”…`, null, true);
+      try {
+        // Free Dictionary API
+        const url = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.trim())}`;
+        const res = await fetchWithTimeout(url);
+        if (!res.ok) throw new Error("No dictionary entry found");
+        const data = await res.json();
+        const entry = Array.isArray(data) ? data[0] : data;
+        let text = `Word: ${entry.word}\n`;
+        if (entry.phonetic) text += `Phonetic: ${entry.phonetic}\n`;
+        (entry.meanings || []).slice(0, 3).forEach(m => {
+          text += `\n[${m.partOfSpeech}]\n`;
+          (m.definitions || []).slice(0, 2).forEach((d, i) => {
+            text += `${i + 1}. ${d.definition}\n`;
+            if (d.example) text += `   e.g. ${d.example}\n`;
+          });
+        });
+        await askBobWithContext(
+          `📖 Define: ${word.trim()}`,
+          text,
+          `Explain this word/phrase clearly and naturally, using the dictionary data. Give a short example sentence if helpful.`
+        );
+      } catch (err) {
+        // Fallback to Wikipedia / research
+        addMessage("system", "Dictionary miss — trying broader research…", null, true);
+        try {
+          const { context } = await gatherResearchContext(word.trim());
+          await askBobWithContext(
+            `📖 Define: ${word.trim()}`,
+            context,
+            `Define or explain this term clearly using the information above.`
+          );
+        } catch (e2) {
+          addMessage("system", "Lookup failed: " + (err.message || err), null, true);
+        }
+      }
+    }
+
+    async function handleTranslate() {
+      if (!engine || isGenerating) {
+        addMessage("system", "Load a model first.", null, true);
+        return;
+      }
+      const text = prompt("Text to translate");
+      if (!text || !text.trim()) return;
+      const pair = prompt("Target language code (e.g. th, es, fr, ja, zh, de) or full name", "th");
+      if (!pair) return;
+      addMessage("system", "Translating…", null, true);
+      try {
+        // MyMemory free tier (no key for light use)
+        const lang = pair.trim().toLowerCase().slice(0, 5);
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.trim())}&langpair=en|${lang}`;
+        const res = await fetchWithTimeout(url);
+        if (!res.ok) throw new Error("Translate service unavailable");
+        const data = await res.json();
+        const translated = data.responseData?.translatedText || "";
+        if (!translated) throw new Error("No translation returned");
+        const context = `Original (assumed English):\n${text.trim()}\n\nTranslation (${lang}):\n${translated}\n\nSource: MyMemory`;
+        await askBobWithContext(
+          `🌍 Translate → ${lang}`,
+          context,
+          `Present the translation clearly. If the result looks off, note that free translation can be imperfect and offer a polished alternative in your own words.`
+        );
+      } catch (err) {
+        addMessage("system", "Translation failed: " + (err.message || err) + ". You can still ask Bob to translate from knowledge.", null, true);
+      }
+    }
+
+    async function handleSummarizeUrl() {
+      if (!engine || isGenerating) {
+        addMessage("system", "Load a model first.", null, true);
+        return;
+      }
+      const url = prompt("Paste a public URL to summarise");
+      if (!url || !url.trim()) return;
+      let target = url.trim();
+      if (!/^https?:\/\//i.test(target)) target = "https://" + target;
+      addMessage("system", `Fetching “${target}”…`, null, true);
+      try {
+        const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(target)}`;
+        const res = await fetchWithTimeout(proxy, {}, 18000);
+        if (!res.ok) throw new Error("Could not fetch page");
+        const payload = await res.json();
+        let html = payload.contents || "";
+        // Crude text extraction
+        html = html.replace(/<script[\s\S]*?<\/script>/gi, " ")
+                   .replace(/<style[\s\S]*?<\/style>/gi, " ")
+                   .replace(/<[^>]+>/g, " ")
+                   .replace(/\s+/g, " ")
+                   .trim()
+                   .slice(0, 6000);
+        if (html.length < 80) throw new Error("Page text too short or blocked");
+        const context = `URL: ${target}\n\nExtracted text (truncated):\n${html}`;
+        await askBobWithContext(
+          `🔗 Summarize: ${target}`,
+          context,
+          `Summarise this web page in clear bullet points or short paragraphs. Capture the main idea, key facts, and any important caveats. Note that the text was auto-extracted and may be incomplete.`
+        );
+      } catch (err) {
+        addMessage("system", "Could not summarise URL: " + (err.message || err), null, true);
+      }
+    }
+
+    document.getElementById("newsChip")?.addEventListener("click", handleNews);
+    document.getElementById("researchChip")?.addEventListener("click", handleResearch);
+    document.getElementById("webSearchChip")?.addEventListener("click", handleWebSearch);
+    document.getElementById("weatherChip")?.addEventListener("click", handleWeather);
+    document.getElementById("currencyChip")?.addEventListener("click", handleCurrency);
+    document.getElementById("cryptoChip")?.addEventListener("click", handleCrypto);
+    document.getElementById("defineChip")?.addEventListener("click", handleDefine);
+    document.getElementById("translateChip")?.addEventListener("click", handleTranslate);
+    document.getElementById("summarizeChip")?.addEventListener("click", handleSummarizeUrl);
+
+    // Clear history
+    clearBtn.addEventListener("click", () => clearModal.classList.add("visible"));
+    cancelClear.addEventListener("click", () => clearModal.classList.remove("visible"));
+    confirmClear.addEventListener("click", async () => {
+      clearModal.classList.remove("visible");
+      await clearMessages();
+      messages = [];
+      chatEl.innerHTML = "";
+      // re-add welcome
+      const welcome = document.createElement("div");
+      welcome.className = "welcome";
+      welcome.id = "welcome";
+      welcome.innerHTML = `
+        <img src="apple-touch-icon.png" alt="Crazy Bob" width="72" height="72" style="border-radius:16px;margin-bottom:12px;" />
+        <h2>Crazy Bob</h2>
+        <p>Chat history cleared. Load a model and start a new conversation — it will be saved automatically.</p>`;
+      chatEl.appendChild(welcome);
+      addMessage("system", "All past chats deleted from this phone.", null, true);
+    });
+
+    loadBtn.addEventListener("click", () => loadModel(false));
+    sendBtn.addEventListener("click", sendMessage);
+    userInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    // Mic + settings + stop
+    micBtn.addEventListener("click", toggleListening);
+    document.getElementById("stopBtn")?.addEventListener("click", () => {
+      if (isGenerating) {
+        isGenerating = false;
+        setGeneratingUI(false);
+        addMessage("system", "Generation stopped.", null, true);
+      }
+    });
+
+    settingsBtn.addEventListener("click", () => {
+      populateVoices();
+      settingsModal.classList.add("visible");
+    });
+    closeSettings.addEventListener("click", () => settingsModal.classList.remove("visible"));
+    settingsModal.addEventListener("click", (e) => {
+      if (e.target === settingsModal) settingsModal.classList.remove("visible");
+    });
+
+    autoSpeakEl.addEventListener("change", async () => {
+      autoSpeak = autoSpeakEl.checked;
+      await setMeta("autoSpeak", autoSpeak);
+      if (!autoSpeak) stopSpeaking();
+    });
+    voiceSelect.addEventListener("change", async () => {
+      selectedVoiceURI = voiceSelect.value;
+      await setMeta("selectedVoiceURI", selectedVoiceURI);
+    });
+    speechRateEl.addEventListener("change", async () => {
+      speechRate = parseFloat(speechRateEl.value) || 1;
+      await setMeta("speechRate", String(speechRate));
+    });
+    recogLangEl.addEventListener("change", async () => {
+      recogLang = recogLangEl.value;
+      await setMeta("recogLang", recogLang);
+      if (recognition) recognition.lang = recogLang;
+    });
+    document.getElementById("continuousVoice")?.addEventListener("change", async (e) => {
+      continuousVoice = !!e.target.checked;
+      await setMeta("continuousVoice", continuousVoice);
+    });
+    document.getElementById("personalitySelect")?.addEventListener("change", async (e) => {
+      personality = e.target.value || "classic";
+      await setMeta("personality", personality);
+    });
+    document.getElementById("exportChatBtn")?.addEventListener("click", () => {
+      const lines = messages.map(m => {
+        const who = m.role === "user" ? "You" : (m.agent ? m.agent : "Bob");
+        return `${who}:\n${m.content}\n`;
+      });
+      const blob = new Blob([lines.join("\n") || "(empty chat)"], { type: "text/plain" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `crazy-bob-chat-${new Date().toISOString().slice(0, 10)}.txt`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    // ---------- Full Memory Export / Import (for growth beyond browser quota) ----------
+    document.getElementById("exportMemoryBtn")?.addEventListener("click", async () => {
+      try {
+        const rules = await loadRules(200);
+        const events = await loadRecentEvents(500);
+        const profile = await getUserProfile();
+        const docs = await listDocuments();
+        const payload = {
+          version: 2,
+          exportedAt: new Date().toISOString(),
+          userName: userName || null,
+          personality: personality || "classic",
+          messages: messages,
+          rules: rules,
+          events: events,
+          profile: profile,
+          documents: docs
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `crazy-bob-memory-${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      } catch (err) {
+        console.error(err);
+        alert("Export failed: " + (err.message || err));
+      }
+    });
+
+    document.getElementById("importMemoryBtn")?.addEventListener("click", () => {
+      document.getElementById("importMemoryFile")?.click();
+    });
+
+    document.getElementById("importMemoryFile")?.addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        if (!data || typeof data !== "object") throw new Error("Invalid memory file");
+
+        // Restore messages
+        if (Array.isArray(data.messages)) {
+          messages = data.messages.slice(-400);
+          await saveMessages(messages);
+          // Clear and re-render chat
+          chatEl.innerHTML = "";
+          renderHistory(messages);
+        }
+
+        // Restore rules
+        if (Array.isArray(data.rules)) {
+          for (const rule of data.rules) {
+            if (typeof rule === "string") await saveRule(rule);
+            else if (rule && rule.text) await saveRule(rule.text);
+          }
+        }
+
+        // Restore events (best-effort)
+        if (Array.isArray(data.events)) {
+          for (const ev of data.events.slice(-500)) {
+            await saveEvent(ev);
+          }
+        }
+
+        // Restore name / personality
+        if (data.userName) {
+          userName = data.userName;
+          await setUserName(userName);
+        }
+        if (data.personality) {
+          personality = data.personality;
+          await setMeta("personality", personality);
+          const persEl = document.getElementById("personalitySelect");
+          if (persEl) persEl.value = personality;
+        }
+
+        // Restore long-term profile
+        if (typeof data.profile === "string" && data.profile.length > 10) {
+          await setUserProfile(data.profile);
+        }
+
+        addMessage("system", `Memory imported: ${messages.length} messages, rules & profile restored. Bob continues from here.`, null, true);
+        alert("Memory imported successfully.");
+        refreshDocList();
+      } catch (err) {
+        console.error(err);
+        alert("Import failed: " + (err.message || err));
+      } finally {
+        e.target.value = ""; // allow re-import of same file
+      }
+    });
+
+    // ---------- Document upload + Profile UI ----------
+    async function refreshDocList() {
+      const el = document.getElementById("docList");
+      if (!el) return;
+      try {
+        const docs = await listDocuments();
+        if (!docs.length) {
+          el.innerHTML = "<em>No documents uploaded yet.</em>";
+          return;
+        }
+        el.innerHTML = docs.map(d => {
+          const kb = Math.round((d.charCount || 0) / 1024);
+          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
+            <span>📄 ${escapeHtml(d.name)} <span style="opacity:.6">(${kb} KB)</span></span>
+            <button type="button" data-del-doc="${d.id}" style="background:none;border:none;color:var(--danger);font-size:12px;cursor:pointer;">Delete</button>
+          </div>`;
+        }).join("");
+        el.querySelectorAll("[data-del-doc]").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            if (!confirm("Delete this document from Bob's memory?")) return;
+            await deleteDocument(Number(btn.dataset.delDoc));
+            refreshDocList();
+          });
+        });
+      } catch (_) {
+        el.innerHTML = "";
+      }
+    }
+
+    document.getElementById("viewProfileBtn")?.addEventListener("click", async () => {
+      const current = await getUserProfile();
+      const updated = prompt("Long-term User Profile (Bob uses this forever). Edit if you want:", current || "");
+      if (updated !== null) {
+        await setUserProfile(updated.trim());
+        alert(updated.trim() ? "Profile saved." : "Profile cleared.");
+      }
+    });
+
+    document.getElementById("uploadDocBtn")?.addEventListener("click", () => {
+      document.getElementById("docFileInput")?.click();
+    });
+
+    document.getElementById("docFileInput")?.addEventListener("change", async (e) => {
+      const files = Array.from(e.target.files || []);
+      if (!files.length) return;
+      for (const file of files) {
+        try {
+          let text = "";
+          const name = file.name;
+          if (file.type === "application/pdf" || name.toLowerCase().endsWith(".pdf")) {
+            text = await extractPdfText(file);
+          } else {
+            text = await file.text();
+          }
+          if (!text || text.trim().length < 20) {
+            alert(`Could not extract useful text from ${name}`);
+            continue;
+          }
+          // Cap very large files so we don't blow IndexedDB
+          if (text.length > 400000) text = text.slice(0, 400000);
+          await saveDocument({ name, type: file.type || "text", text, added: Date.now() });
+          addMessage("system", `Document "${name}" ingested (${Math.round(text.length/1024)} KB). Bob can now answer questions about it offline.`, null, true);
+        } catch (err) {
+          console.error(err);
+          alert(`Failed to process ${file.name}: ${err.message || err}`);
+        }
+      }
+      e.target.value = "";
+      refreshDocList();
+    });
+
+    // Client-side PDF text extraction using PDF.js
+    async function extractPdfText(file) {
+      // Dynamic import of PDF.js
+      const pdfjs = await import("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs");
+      pdfjs.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs";
+      const buf = await file.arrayBuffer();
+      const pdf = await pdfjs.getDocument({ data: buf }).promise;
+      let full = "";
+      const maxPages = Math.min(pdf.numPages, 80); // safety limit
+      for (let i = 1; i <= maxPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        const pageText = content.items.map(it => it.str).join(" ");
+        full += pageText + "\n\n";
+      }
+      return full.trim();
+    }
+
+    // Refresh doc list when settings open
+    settingsBtn?.addEventListener("click", () => refreshDocList());
+
+    serperKeyEl?.addEventListener("change", async () => {
+      serperKey = (serperKeyEl.value || "").trim();
+      await setMeta("serperKey", serperKey);
+    });
+    tavilyKeyEl?.addEventListener("change", async () => {
+      tavilyKey = (tavilyKeyEl.value || "").trim();
+      await setMeta("tavilyKey", tavilyKey);
+    });
+    serperKeyEl?.addEventListener("blur", async () => {
+      serperKey = (serperKeyEl.value || "").trim();
+      await setMeta("serperKey", serperKey);
+    });
+    tavilyKeyEl?.addEventListener("blur", async () => {
+      tavilyKey = (tavilyKeyEl.value || "").trim();
+      await setMeta("tavilyKey", tavilyKey);
+    });
+
+    // Voices often load asynchronously
+    if (window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = populateVoices;
+      populateVoices();
+    }
+
+    setStatus("", "Model not loaded");
+
+    // Load saved voice preferences + auto-restore last model
+    (async () => {
+      try {
+        await loadVoiceSettings();
+      } catch (e) {
+        console.warn("Voice settings load failed", e);
+      }
+      try {
+        const last = await getLastModel();
+        if (last) {
+          const opt = [...modelSelect.options].find(o => o.value === last);
+          if (opt) modelSelect.value = last;
+          setTimeout(() => loadModel(true), 400);
+        }
+      } catch (e) {
+        console.warn("Auto-load skipped", e);
+      }
+    })();
+  </script>
 </body>
 </html>

@@ -1,64 +1,43 @@
-# AI Council v3.3 — more useful tool
+# Crazy Bob 🤪 — Autonomous Engine + Long-Term Memory & Offline RAG
 
-Staged multi-agent team that **researches → plans → builds** single-file mobile web apps. Dashboard layout is unchanged from the original.
+Private local AI chat that runs entirely in your browser using WebLLM + WebGPU.  
+No cloud required for chat. Works on iPhone (Safari 26+).
 
-## Upload to GitHub Pages
-Upload **all** of these to the **root** of the repo (not inside a folder):
+## New in this version
 
-- index.html
-- app.js
-- sw.js
-- manifest.webmanifest
-- icon-192.png
-- icon-512.png
-- apple-touch-icon.png
+### 1. Long-Term Memory Compression (Episodic Summarization)
+When chat history exceeds ~400 messages, Bob automatically compresses the oldest turns into a permanent **User Profile**.  
+Key facts about your life, preferences, projects and goals are kept forever and injected into every future conversation.
 
-Settings → Pages → Deploy from branch → main → / (root).  
-Open the `https://USERNAME.github.io/REPO/` link in **Safari**.  
-If you already installed an older version: delete the Home Screen icon, open the link, Add to Home Screen again.
+### 2. Local Document & PDF Parsing (Offline RAG)
+- Upload `.txt`, `.md` or `.pdf` files from your phone.
+- Text is extracted entirely client-side (PDF.js).
+- Documents are chunked and stored in IndexedDB.
+- When you ask a question, Bob retrieves the most relevant chunks and uses them as context — completely offline.
 
-## What’s new in v3.3 (dashboard layout unchanged)
+### 3. Semantic-style Retrieval
+A fast keyword + overlap retriever currently powers document RAG (works on every device).  
+The architecture is ready to swap in a true local embedding model (e.g. all-MiniLM) later when WebGPU support is more universal on iOS.
 
-- **Wider live research:** Hacker News, Stack Overflow, academic papers (OpenAlex) and GitHub repos, alongside Wikipedia + DuckDuckGo. All free, no keys. Up to 24 sources with links.
-- **Build cards:** Share (iPhone share sheet), Copy code, plus one-tap change chips on the latest build (export/import data, light/dark, offline, accessibility, bug-fix pass).
-- **Projects:** Import a project JSON, export a Markdown **Report** (goal, sources, plan, builds, discussion) and a **Bundle .zip** (report, project, every build, latest as index.html).
-- **Files:** each build shows size and lines added/removed vs the previous one; **Use** restores an old version as the newest; uploaded knowledge docs can be removed.
-- More upload types (.js .css .py .ts .xml .yml .log).
-- Service worker cache bumped (v11): reload twice, or delete and re-add the Home Screen icon, to pick up the update.
+### 4. Everything from previous versions
+- Chain-of-Thought with collapsible 🧠 Thinking blocks
+- Self-Healing tool loop
+- Self-Improvement rules that are learned and injected
+- Team mode (Planner → Writer → Reviewer)
+- Voice in/out, continuous conversation
+- Export / Import full memory (JSON)
+- ~400 message history + permanent profile + documents
 
-## Earlier (v3.2)
+## How to use the new memory features
 
-### Stronger live research
-- Wikipedia (with real page links) + DuckDuckGo Instant Answer
-- Extra query variants: best practices, mobile/Safari/iPhone, **latest / news / current**
-- Research card shows **source · title · text + “Open source ↗” links**
-- Card actions: **↻ Refresh**, **+ Custom query**, **Copy**, **Pin to Notes**, **Clear**
-- Toolbar **Research** button uses whatever is currently typed as an extra query
-- Researcher is instructed to ground findings in the real research block (no invented live news)
+1. Open **Settings ⚙️**
+2. **View / edit User Profile** – see or manually refine what Bob has learned about you
+3. **Upload document** – add PDFs, notes, ebooks, etc. Bob can then answer questions about them offline
+4. Keep chatting – when history grows large, Bob automatically compresses old conversations into the permanent profile
 
-### Everyday extras
-- **🎤 Voice input** (next to Go) — Web Speech API
-- **Speak team messages** toggle in Settings (text-to-speech)
-- Same header / stage bar / chat / toolbar / input layout
+## Privacy
+Everything stays on your device. Documents, profile, rules and chat never leave the phone unless you explicitly use an online tool.
 
-### Engines (unchanged core)
-- Free AI (Pollinations, no key) → falls back to built-in voices
-- Built-in offline team + starter templates
-- Custom API (Groq, OpenRouter, Gemini, NVIDIA, OpenAI-compatible, Anthropic)
+---
 
-### Workflow
-1. Describe a problem / app.
-2. Team researches (optional web notes) → discusses → votes until agreement.
-3. Plans features, screens, data, acceptance criteria → votes again.
-4. Only then **Build & Preview** appears. Builder writes code → sandbox tests → Skeptic reviews → Preview opens.
-- Notes while plan is locked reopen the plan.
-- Changes after a build trigger a rebuild.
-- Stop / Continue work as before.
-
-### Improving an existing app
-Say “Improve this app” or upload an HTML file. The team inspects real code. With Free AI or your key the Builder uses SEARCH/REPLACE edit blocks.
-
-## Tips
-- Keep “One AI call per member” off and plan rounds at 3 to stay within free-tier limits.
-- For pure research topics use the Research template or the Research button; the team still runs the full staged flow unless you stop it.
-- Research is public-source only (Wikipedia + DDG). It is useful for facts and current abstracts, not a full news crawler.
+Made for fun. Stay crazy. Now with real long-term memory and offline document RAG.
